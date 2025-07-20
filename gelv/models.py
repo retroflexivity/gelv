@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.db.models.query import QuerySet
 from typing import Optional
 from typing import TYPE_CHECKING
@@ -7,56 +8,36 @@ import datetime
 if TYPE_CHECKING:
     from django.db.models.manager import Manager
 
-class Customer(models.Model):
-    objects: Manager['Customer']
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    phone = models.CharField(max_length=10)
-    email = models.EmailField()
-    password = models.CharField(max_length=100)
 
-    # to save the data
-    def register(self):
-        self.save()
-
-    @staticmethod
-    def get_customer_by_email(email: str) -> Optional['Customer']:
-        try:
-            return Customer.objects.get(email=email)
-        except Customer.DoesNotExist:
-            return None
-
-    def exists(self) -> bool:
-        if Customer.objects.filter(email=self.email):
-            return True
-
-        return False
+class Category(models.Model):
+    objects: Manager['Category']
+    
+    name = models.CharField(max_length=200)
 
 
 class Product(models.Model):
     objects: Manager['Product']
 
-    name = models.CharField(max_length=60)
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
     price = models.IntegerField(default=0)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, default=1)
     description = models.CharField(
-        max_length=250, default='', blank=True, null=True)
+        max_length=20000, default='', blank=True, null=True)
 
     @staticmethod
-    def get_products_by_id(ids: list[int]) -> QuerySet['Product']:
+    def get_by_ids(ids: list[int]) -> QuerySet['Product']:
         return Product.objects.filter(id__in=ids)
 
-    @staticmethod
-    def get_all_products() -> QuerySet['Product']:
-        return Product.objects.all()
 
 class Order(models.Model):
-    objects: Manager['Order']
+    objects: models.Manager['Order']
+    id = models.AutoField(primary_key=True)
 
     product = models.ForeignKey(Product,
                                 on_delete=models.CASCADE)
-    customer = models.ForeignKey(Customer,
+    user = models.ForeignKey(User,
                                  on_delete=models.CASCADE)
-    quantity = models.IntegerField(default=1)
     price = models.IntegerField()
     address = models.CharField(max_length=50, default='', blank=True)
     phone = models.CharField(max_length=50, default='', blank=True)
@@ -67,7 +48,5 @@ class Order(models.Model):
         self.save()
 
     @staticmethod
-    def get_orders_by_customer(customer_id: Product) -> QuerySet['Order']:
-        return Order.objects.filter(customer=customer_id).order_by('-date')
-
-
+    def get_by_user_sorted(user_id: int) -> QuerySet['Order']:
+        return Order.objects.filter(user=user_id).order_by('-date')

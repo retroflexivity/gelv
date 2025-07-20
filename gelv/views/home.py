@@ -1,5 +1,6 @@
-from django.shortcuts import render, redirect, HttpResponseRedirect
-from store.models.product import Products
+from django.shortcuts import render, redirect 
+from django.http import HttpResponseRedirect
+from ..models import Product, User
 from django.views import View
 
 
@@ -41,12 +42,12 @@ def store(request):
     if not cart:
         request.session['cart'] = {}
     products = None
-    categories = Category.get_all_categories()
+    categories = User.get_all_categories()
     categoryID = request.GET.get('category')
     if categoryID:
-        products = Products.get_all_products_by_categoryid(categoryID)
+        products = Product.get_all_products_by_categoryid(categoryID)
     else:
-        products = Products.get_all_products()
+        products = Product.get_all_products()
 
     data = {}
     data['products'] = products
