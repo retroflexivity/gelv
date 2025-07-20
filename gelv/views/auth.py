@@ -1,10 +1,11 @@
 # views.py
 from django import forms
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib import messages
 from django.views.generic import CreateView
 from django.views.decorators.csrf import csrf_protect
@@ -13,69 +14,93 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from ..models import Product
 
+User = get_user_model()  # type: ignore[misc]
 
-class EmailUserCreationForm(UserCreationForm):
+
+class CustomUserCreationForm(UserCreationForm):
     """
-    Custom form that uses email instead of username
+    Custom form for creating users with email authentication
     """
-    email = forms.EmailField(required=True)
-    
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your email address'
+        })
+    )
+
     class Meta:
         model = User
         fields = ("email", "password1", "password2")
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # add Bootstrap classes to password fields
+        self.fields['password1'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Password'
+        })
+        self.fields['password2'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Confirm Password'
+        })
+    
     def clean_email(self):
-        email = self.cleaned_data.get('email', '').lower()
-        if User.objects.filter(username=email).exists():
+        email = self.cleaned_data.get('email', '').lower().strip()
+        if User.objects.filter(email=email).exists():
             raise forms.ValidationError('A user with this email already exists.')
+        try:
+            validate_email(email)
+        except ValidationError:
+            raise forms.ValidationError('Please enter a valid email address.')
         return email
-    
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.username = self.cleaned_data['email'].lower()  # Store email in username field
-        user.email = self.cleaned_data['email'].lower()     # Also store in email field
-        if commit:
-            user.save()
-        return user
 
-@csrf_protect
-def login_view(request: HttpRequest) -> HttpResponse:
+
+class CustomLoginForm(AuthenticationForm):
     """
-    Handle user login using email as username
+    Custom login form using email
     """
-    if request.user.is_authenticated:
-        return redirect('dashboard')
+    username = EmailField(widget=forms.TextInput(attrs={"autofocus": True}))
+
+
+class CustomLoginView(LoginView):
+    """
+    Custom login view using email as username
+    """
+    template_name = 'accounts/login.html'
+    form_class = CustomLoginForm
+    redirect_authenticated_user = True
     
-    if request.method == 'POST':
-        email = request.POST.get('email', '').strip().lower()
-        password = request.POST.get('password', '')
+    def get_success_url(self):
+        return reverse_lazy('catalogue')
+    
+    def form_valid(self, form):
+        email = form.cleaned_data.get('email').lower().strip()
+        password = form.cleaned_data.get('password')
+        remember_me = form.cleaned_data.get('remember_me')
         
-        if not email or not password:
-            messages.error(request, 'Email and password are required.')
-            return render(request, 'accounts/login.html')
-        
-        user = authenticate(request, username=email, password=password)
+        # Since we're using email as USERNAME_FIELD, we can authenticate directly with email
+        user = authenticate(self.request, email=email, password=password)
         
         if user is not None:
-            login(request, user)
-            messages.success(request, f'Welcome back, {user.email}!')
+            login(self.request, user)
             
-            # Redirect to next page or dashboard
-            next_url = request.GET.get('next', 'dashboard')
-            return redirect(next_url)
+            # Set session expiry based on remember me
+            if not remember_me:
+                self.request.session.set_expiry(0)  # Session expires when browser closes
+            else:
+                self.request.session.set_expiry(1209600)  # 2 weeks
+            
+            messages.success(self.request, f'Welcome back, {user.first_name or user.email}!')
+            return super().form_valid(form)
         else:
-            messages.error(request, 'Invalid email or password.')
+            form.add_error(None, 'Invalid email or password.')
+            return self.form_invalid(form)
     
-    return render(request, 'accounts/login.html')
-
-
-def logout_view(request: HttpRequest) -> HttpResponse:
-    """
-    Handle user logout
-    """
-    logout(request)
-    messages.success(request, 'You have been logged out successfully.')
-    return redirect('login')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Login'
+        return context
 
 
 @login_required

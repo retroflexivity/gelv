@@ -28,6 +28,10 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
+# AUTH_USER_MODEL = 'gelv.User'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
+
 # Application definition
 
 INSTALLED_APPS = [

@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser,UserManager
 from django.db.models.query import QuerySet
 from typing import Optional
 from typing import TYPE_CHECKING
@@ -7,6 +7,30 @@ import datetime
 
 if TYPE_CHECKING:
     from django.db.models.manager import Manager
+
+
+class User(AbstractUser):
+    """
+    Custom user model that uses email as the unique identifier
+    instead of username.
+    """
+    objects: UserManager['User']
+    
+    email = models.EmailField(unique=True)
+    date_joined = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    
+    # Remove username requirement
+    username = None
+    
+    USERNAME_FIELD = 'email'
+    
+    def __str__(self):
+        return self.email
+    
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}".strip()
 
 
 class Category(models.Model):
