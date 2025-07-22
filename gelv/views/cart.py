@@ -1,5 +1,6 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -41,8 +42,10 @@ def cart_view(request: HttpRequest) -> HttpResponse:
 def add_to_cart(request: HttpRequest) -> HttpResponse:
     """Add item to cart"""
     try:
-        data = json.loads(request.body)
-        product_id = int(data.get('product_id'))
+        if request.content_type == 'application/json':
+            product_id = int(json.loads(request.body).get('product_id'))
+        else:
+            product_id = int(request.POST.get('product_id', -1))
         
         # verify product exists
         product = get_object_or_404(Product, id=int(product_id))
@@ -50,22 +53,21 @@ def add_to_cart(request: HttpRequest) -> HttpResponse:
         # get cart from session or create empty cart
         cart = request.session.get('cart', [])
         
-        # add or increment count
+        # add if not already in cart
         if product_id not in cart:
             cart.append(product_id)
+            request.session['cart'] = cart
+            request.session.modified = True
+            messages.success(request, f'{product.name} added to cart')
+        else:
+            messages.info(request, f'{product.name} is already in cart')
         
         # save cart to session
         request.session['cart'] = cart
         request.session.modified = True
         
-        # calculate total items in cart
+        return redirect(request.META.get('HTTP_REFERER', 'catalogue'))        
 
-        return JsonResponse({
-            'success': True,
-            'message': f'{product.name} added to cart',
-            'cart_count': len(cart)
-        })
-        
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
@@ -74,8 +76,10 @@ def add_to_cart(request: HttpRequest) -> HttpResponse:
 def remove_from_cart(request: HttpRequest) -> HttpResponse:
     """Remove item from cart"""
     try:
-        data = json.loads(request.body)
-        product_id = str(data.get('product_id'))
+        if request.content_type == 'application/json':
+            product_id = int(json.loads(request.body).get('product_id'))
+        else:
+            product_id = int(request.POST.get('product_id', -1))
         
         cart = request.session.get('cart', [])
         
@@ -84,14 +88,12 @@ def remove_from_cart(request: HttpRequest) -> HttpResponse:
             cart.remove(product_id)
             request.session['cart'] = cart
             request.session.modified = True
+            messages.success(request, f'{product.name} removed from cart')
             
-            return JsonResponse({
-                'success': True,
-                'message': f'{product.name} removed from cart',
-                'cart_count': len(cart),
-            })
         else:
-            return JsonResponse({'success': False, 'error': 'Item not in cart'})
+            messages.info(request, f'{product.name} is not in cart')
+
+        return redirect(request.META.get('HTTP_REFERER', 'catalogue'))        
         
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
@@ -121,7 +123,7 @@ def process_payment(request: HttpRequest) -> HttpResponse:
         if not email:
             return JsonResponse({'success': False, 'error': 'Email is required'})
         
-        user = User.objects.get(username=email)
+        user = User.get_by_email(email)
         if not user:
             # # create new user
             # user = User(

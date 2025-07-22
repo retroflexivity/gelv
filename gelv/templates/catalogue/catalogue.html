@@ -1,172 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Store</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'gelv/css/gelv.css' %}">
+    <title>Store</title>
 </head>
-
 <body>
-  <div class="container py-4">
-    <!-- Header -->
-    <div class="text-center mb-4">
-      <h1 class="display-5">Store</h1>
-    </div>
-
-    <!-- Filters -->
-    <form method="get" class="card mb-4">
-      <div class="card-body">
-        <div class="row g-3">
-          <div class="col-md-3">
-            <label for="category" class="form-label">Category</label>
-            <select name="category" id="category" class="form-select">
-              <option value="">All Categories</option>
-              {% for category in categories %}
-              <option value="{{ category.id }}" {% if category.id==current_category %}selected{% endif %}>
-                {{ category.name }} ({{ category.product_count }})
-              </option>
-              {% endfor %}
+    <h1>Store</h1>
+    
+    <!-- Search Section -->
+    <form method="get" class="search-section">
+        <div class="category-dropdown">
+            <select name="category">
+                <option value="">All categories</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" 
+                            {% if category.id == current_category %}selected{% endif %}>
+                        {{ category.name }} ({{ category.product_count }})
+                    </option>
+                {% endfor %}
             </select>
-          </div>
-
-          <div class="col-md-4">
-            <label for="search" class="form-label">Search</label>
-            <input type="text" name="search" id="search" class="form-control" value="{{ search_query }}"
-              placeholder="Search journals...">
-          </div>
-
-          <div class="col-md-3">
-            <label for="sort" class="form-label">Sort by</label>
-            <select name="sort" id="sort" class="form-select">
-              {% for option in sort_options %}
-              <option value="{{ option.value }}" {% if option.value==sort_by %}selected{% endif %}>
-                {{ option.label }}
-              </option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div class="col-md-2">
-            <label class="form-label">&nbsp;</label>
-            <button type="submit" class="btn btn-primary d-block w-100">Apply</button>
-          </div>
         </div>
-      </div>
+        
+        <div class="search-input">
+            <input type="text" name="search" value="{{ search_query }}" 
+                   placeholder="Search journals...">
+        </div>
+        
+        <div class="search-button">
+            <button type="submit">Search</button>
+        </div>
+        
+        <input type="hidden" name="sort" value="{{ sort_by }}">
     </form>
-
+    
     <!-- Results Info -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <small class="text-muted">
-        Showing {{ products.start_index }}-{{ products.end_index }} of {{ total_products }} journals
-        {% if search_query %}
-        for "<strong>{{ search_query }}</strong>"
-        {% endif %}
-      </small>
-    </div>
-
-    <!-- Products Grid -->
-    {% if products %}
-    <div class="row g-4 mb-4">
-      {% for product in products %}
-      <div class="col-lg-3 col-md-4 col-sm-6">
-        <div class="card h-100 shadow-sm">
-          <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
-            {% if product.image %}
-            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid"
-              style="max-height: 100%; max-width: 100%; object-fit: cover;">
-            {% else %}
-            <span class="text-muted">No Image</span>
+    <div class="results-info">
+        <div class="product-count">
+            Showing {{ products.start_index }}-{{ products.end_index }} of {{ total_products }} items.
+            {% if search_query %}
+                for "{{ search_query }}"
             {% endif %}
-          </div>
-
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title">
-              <a href="{% url 'product_detail' product.id %}" class="text-decoration-none text-dark">
-                {{ product.name }}
-              </a>
-            </h5>
-
-            <div class="mb-2">
-              <span class="fs-5 fw-bold text-primary">${{ product.price }}</span>
-            </div>
-
-            {% if product.description %}
-            <p class="card-text text-muted small mb-3">
-              {{ product.description|truncatewords:15 }}
-            </p>
-            {% endif %}
-
-            <div class="mt-auto">
-              {% if product.id in owned_product_ids %}
-              <span class="badge bg-success me-1">Owned</span>
-              {% endif %}
-              {% if product.id in cart_items %}
-              <span class="badge bg-warning">In Cart</span>
-              {% endif %}
-            </div>
-          </div>
         </div>
-      </div>
-      {% endfor %}
+        
+        <form method="get" class="sort-dropdown">
+            <!-- Preserve current filters -->
+            {% if search_query %}
+                <input type="hidden" name="search" value="{{ search_query }}">
+            {% endif %}
+            {% if current_category %}
+                <input type="hidden" name="category" value="{{ current_category }}">
+            {% endif %}
+            
+            <label for="sort">Sort by:</label>
+            <select name="sort" id="sort" onchange="this.form.submit()">
+                {% for option in sort_options %}
+                    <option value="{{ option.value }}" 
+                            {% if option.value == sort_by %}selected{% endif %}>
+                        {{ option.label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
     </div>
-
-    <!-- Pagination -->
-    {% if products.has_other_pages %}
-    <nav aria-label="Product pagination">
-      <ul class="pagination justify-content-center">
-        {% if products.has_previous %}
-        <li class="page-item">
-          <a class="page-link"
-            href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_category %}category={{ current_category }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ products.previous_page_number }}">
-            &laquo; Previous
-          </a>
-        </li>
+    
+    <!-- Products List -->
+    {% if products %}
+        <div class="products-list">
+            {% for product in products %}
+                <div class="product-item">
+                    <div class="product-info">
+                        <div class="product-name">
+                            <a href="{% url 'product_detail' product.id %}">{{ product.name }}</a>
+                        </div>
+                        
+                        <div class="product-description">
+                            {{ product.description|truncatewords_html:10 }}
+                        </div>
+                    </div>
+                        
+                    <div class="product-meta">
+                        <div class="product-price">${{ product.price|floatformat:2 }}</div>
+                        
+                        <div class="product-status">
+                            {% if product.id in owned_product_ids %}
+                                <span class="status-badge badge-owned">Owned</span>
+                            {% elif product.id in cart_items %}
+                                <form method="post" action="{% url 'remove_from_cart' %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                                    <button type="submit" class="status-badge button-remove">Remove from cart</button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{% url 'add_to_cart' %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                                    <button type="submit" class="status-badge button-add">Add to cart</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if products.has_other_pages %}
+            <div class="pagination">
+                {% if products.has_previous %}
+                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_category %}category={{ current_category }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ products.previous_page_number }}">
+                        &laquo; Previous
+                    </a>
+                {% endif %}
+                
+                {% for num in products.paginator.page_range %}
+                    {% if products.number == num %}
+                        <span class="current">{{ num }}</span>
+                    {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_category %}category={{ current_category }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ num }}">
+                            {{ num }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if products.has_next %}
+                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_category %}category={{ current_category }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ products.next_page_number }}">
+                        Next &raquo;
+                    </a>
+                {% endif %}
+            </div>
         {% endif %}
-
-        {% for num in products.paginator.page_range %}
-        {% if products.number == num %}
-        <li class="page-item active">
-          <span class="page-link">{{ num }}</span>
-        </li>
-        {% elif num > products.number|add:'-3' and num < products.number|add:'3' %} <li class="page-item">
-          <a class="page-link"
-            href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_category %}category={{ current_category }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ num }}">
-            {{ num }}
-          </a>
-          </li>
-          {% endif %}
-          {% endfor %}
-
-          {% if products.has_next %}
-          <li class="page-item">
-            <a class="page-link"
-              href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_category %}category={{ current_category }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ products.next_page_number }}">
-              Next &raquo;
-            </a>
-          </li>
-          {% endif %}
-      </ul>
-    </nav>
-    {% endif %}
     {% else %}
-    <div class="text-center py-5">
-      <div class="mb-3">
-        <svg width="64" height="64" class="text-muted" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-            clip-rule="evenodd"></path>
-        </svg>
-      </div>
-      <h4 class="text-muted">No journals found</h4>
-      <p class="text-muted">Try adjusting your search criteria or browse all categories.</p>
-      <a href="?" class="btn btn-outline-primary">View All Products</a>
-    </div>
+        <div class="no-products">
+            <h3>No journals found</h3>
+            <p>Try adjusting your search criteria or browse all categories.</p>
+        </div>
     {% endif %}
-  </div>
+</div>
+    <script>
+        // hide content until scroll is restored
+        document.documentElement.classList.add('scroll-restoring');
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+        const stayForms = document.querySelectorAll('form[action*="/cart/"], form[class="sort-dropdown"]');
+        stayForms.forEach(form => {
+            function saveScroll() {
+                sessionStorage.setItem('scrollPosition', window.pageYOffset);
+            }
+            form.addEventListener('submit', saveScroll);
+            form.addEventListener('change', saveScroll);
+        });
+
+        // restore scroll position as early as possible
+        document.addEventListener('DOMContentLoaded', function() {
+            const scrollPosition = sessionStorage.getItem('scrollPosition');
+            if (scrollPosition) {
+                window.scrollTo(0, parseInt(scrollPosition));
+                sessionStorage.removeItem('scrollPosition');
+            }
+    
+            document.documentElement.classList.remove('scroll-restoring');
+        });
+    </script>
 </body>
-
 </html>

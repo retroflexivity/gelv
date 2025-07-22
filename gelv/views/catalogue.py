@@ -45,7 +45,7 @@ def catalogue_view(request: HttpRequest) -> HttpResponse:
     categories = Category.objects.all().annotate(product_count=Count('product'))
     
     # pagination
-    paginator = Paginator(products, 20)  # show 20 products per page
+    paginator = Paginator(products, 20)
     try:
         page_products = paginator.page(page)
     except PageNotAnInteger:
@@ -57,7 +57,7 @@ def catalogue_view(request: HttpRequest) -> HttpResponse:
     owned_product_ids = []
     if request.user.is_authenticated:
         try:
-            user = User.objects.get(username=request.user.email)
+            user = User.get_by_email(request.user.email)
             if user:
                 owned_product_ids = list(Order.objects.filter(
                     user=user,
@@ -103,7 +103,7 @@ def product_detail_view(request: HttpRequest, product_id: int) -> HttpResponse:
     user_owns_product = False
     if request.user.is_authenticated:
         try:
-            user = User.objects.get(username=request.user.email)
+            user = User.objects.get(email=request.user.email)
             if user:
                 user_owns_product = Order.objects.filter(
                     user=user,

@@ -1,12 +1,35 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser,UserManager
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db.models.query import QuerySet
-from typing import Optional
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 import datetime
 
-if TYPE_CHECKING:
-    from django.db.models.manager import Manager
+from django.db.models.manager import Manager
+
+
+class UserManager(BaseUserManager):
+    """
+    Custom user manager for User model with email as unique identifier
+    """
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(email, password, **extra_fields)
 
 
 class User(AbstractUser):
@@ -14,23 +37,24 @@ class User(AbstractUser):
     Custom user model that uses email as the unique identifier
     instead of username.
     """
-    objects: UserManager['User']
-    
+    objects = UserManager()  # type: ignore[assignment, misc]
+
     email = models.EmailField(unique=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
-    
-    # Remove username requirement
-    username = None
-    
+
+    # remove username
+    username = None  # type: ignore[assignment]
+
     USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
     
     def __str__(self):
         return self.email
     
-    @property
-    def full_name(self):
-        return f"{self.first_name} {self.last_name}".strip()
+    @staticmethod
+    def get_by_email(email: str) -> 'User':
+        return User.objects.get(email=email)
 
 
 class Category(models.Model):
@@ -44,7 +68,7 @@ class Product(models.Model):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
-    price = models.IntegerField(default=0)
+    price = models.FloatField(default=0.0)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, default=1)
     description = models.CharField(
         max_length=20000, default='', blank=True, null=True)

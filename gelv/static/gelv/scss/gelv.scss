@@ -1,0 +1,278 @@
+        // Variables
+        $primary-color: #007bff;
+        $primary-hover: #0056b3;
+        $text-color: #333;
+        $text-muted: #666;
+        $text-light: #999;
+        $button-bg: #007bff;
+        $button-color: #fff;
+        $border-color: #ddd;
+        $border-light: #e9ecef;
+        $background-main: #f8f9fa;
+        $background-card: #f8f9fa;
+        $success-bg: #d4edda;
+        $success-color: #155724;
+        $warning-bg: #fff3cd;
+        $warning-color: #856404;
+        $owned-bg: #d4edda;
+        $owned-color: #155724;
+        $incart-bg: #fff3cd;
+        $incart-color: #856404;
+        $add-bg: #007bff;
+        $add-color: #fff;
+        $remove-bg: #cc390c;
+        $remove-color: #fff;
+        $font-family: Georgia, serif;
+        
+        // Mixins
+        @mixin button-style {
+            padding: 12px;
+            border: 1px solid $border-color;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 100%;
+        }
+        
+        @mixin flex-center {
+            display: flex;
+            align-items: center;
+        }
+        
+        @mixin colored($bg-color, $text-color) {
+            background-color: $bg-color;
+            color: $text-color;
+        }
+        
+        // Base styles
+        * {
+            font-family: $font-family;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .scroll-restoring {
+            visibility: hidden;
+        }
+
+        body {
+            line-height: 1.6;
+            background-color: $background-main;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: $text-color;
+        }
+        
+        // Search Section
+        .search-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: stretch;
+            
+            .category-dropdown {
+                flex: 0 0 200px;
+            }
+            
+            .search-input {
+                flex: 1;
+            }
+            
+            .search-button {
+                flex: 0 0 100px;
+            }
+        }
+        
+        select, input[type="text"], button {
+            @include button-style;
+        }
+        
+        button {
+            background-color: $button-bg;
+            color: $button-color;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            
+            &:hover {
+                background-color: $primary-hover;
+            }
+        }
+        
+        // Results Info Section
+        .results-info {
+            @include flex-center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 15px 0;
+        }
+        
+        .product-count {
+            color: $text-muted;
+            font-size: 14px;
+        }
+        
+        .sort-dropdown {
+            @include flex-center;
+            gap: 10px;
+            
+            select {
+                width: 180px;
+                padding: 8px 12px;
+            }
+            
+            label {
+                color: $text-muted;
+                font-size: 14px;
+                font-weight: 500;
+            }
+        }
+        
+        // Products List
+        .products-list {
+            margin-bottom: 30px;
+        }
+        
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 0;
+            
+            &:last-child {
+                border-bottom: none;
+            }
+        }
+        
+        .product-info {
+            flex: 1;
+        }
+        
+        .product-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            
+            a {
+                text-decoration: none;
+                color: $text-color;
+                
+                &:hover {
+                    color: $primary-color;
+                }
+            }
+        }
+        
+        .product-description {
+            color: $text-muted;
+            font-size: 14px;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .product-meta {
+            @include flex-center;
+            gap: 15px;
+        }
+        
+        .product-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: $primary-color;
+        }
+        
+        .product-status {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            &.badge-owned {
+                @include colored($owned-bg, $owned-color);
+            }
+            
+            &.badge-cart {
+                @include colored($incart-bg, $incart-color);
+            }
+            &.button-add {
+                @include colored($add-bg, $add-color)
+            }
+            &.button-remove {
+                @include colored($remove-bg, $remove-color)
+            }
+        }
+        
+        // Pagination
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 30px;
+            
+            a, span {
+                padding: 10px 15px;
+                text-decoration: none;
+                border: 1px solid $border-color;
+                color: $text-color;
+                border-radius: 4px;
+            }
+            
+            a:hover {
+                background-color: $background-main;
+            }
+            
+            .current {
+                background-color: $primary-color;
+                color: white;
+                border-color: $primary-color;
+            }
+        }
+        
+        // No Products Message
+        .no-products {
+            text-align: center;
+            padding: 60px 20px;
+            color: $text-muted;
+            
+            h3 {
+                margin-bottom: 10px;
+                color: $text-light;
+            }
+        }
+        
+        // Responsive
+        @media (max-width: 600px) {
+            .search-section {
+                flex-direction: column;
+                
+                .category-dropdown, 
+                .search-input, 
+                .search-button {
+                    flex: none;
+                }
+            }
+            
+            .results-info {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+            
+            .product-item {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+            
+            .product-meta {
+                justify-content: space-between;
+            }
+        }
+
