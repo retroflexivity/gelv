@@ -4,46 +4,47 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import HttpResponse
 from django.http.request import HttpRequest
 from django.db.models import Q, Count
-from ..models import Product, Category, User, Order
+from ..models import Issue, Journal, IssueOrder, User
+from ..utils import trace
 
 
 def catalogue_view(request: HttpRequest) -> HttpResponse:
     """Main catalogue view with filtering and search"""
-    
+
     # get filter parameters
-    category_id = request.GET.get('category', '')
+    journal_id = request.GET.get('journal', '')
     search_query = request.GET.get('search', '')
     sort_by = request.GET.get('sort', 'name')  # name, price_low, price_high, newest
     page = request.GET.get('page', 1)
-    
+
     filters = Q()
-    # category filter
-    if category_id:
+    # journal filter
+    if journal_id:
         try:
-            filters &= Q(category_id=int(category_id))
+            filters &= Q(journal_id=int(journal_id))
         except (ValueError, TypeError):
             pass
 
     # search filter
+    # TODO: make it work with issue numbers
     if search_query:
         filters &= (
-            Q(name__icontains=search_query) |
-            Q(description__icontains=search_query)
+            Q(journal__name__icontains=search_query) | Q(description__icontains=search_query)
         )
-    
+
     # sorting
     order_by = {
         'price_low': 'price',
-        'price_high': '-price', 
+        'price_high': '-price',
         'newest': '-id',
-        'name': 'name'
+        'name': 'journal__name'
     }.get(sort_by, 'name')
 
-    products = Product.objects.filter(filters).order_by(order_by)
+    products = Issue.objects.filter(filters).order_by(order_by)
 
-    # get all categories for filter dropdown + product number
-    categories = Category.objects.all().annotate(product_count=Count('product'))
-    
+    # get all journals for filter dropdown + product number
+    journals = Journal.objects.all().annotate(issue_count=Count('issue'))
+
     # pagination
     paginator = Paginator(products, 20)
     try:
@@ -52,27 +53,24 @@ def catalogue_view(request: HttpRequest) -> HttpResponse:
         page_products = paginator.page(1)
     except EmptyPage:
         page_products = paginator.page(paginator.num_pages)
-    
+
     # Get user's owned products if logged in
     owned_product_ids = []
     if request.user.is_authenticated:
         try:
             user = User.get_by_email(request.user.email)
             if user:
-                owned_product_ids = list(Order.objects.filter(
-                    user=user,
-                    status=True
-                ).values_list('product_id', flat=True))
-        except (ObjectDoesNotExist, AttributeError):
-            pass
-    
-    # Get current cart items
-    cart_items = request.session.get('cart', [])
-    
+                owned_product_ids = user.get_owned_issues().values_list('id', flat=True)
+        except ObjectDoesNotExist as e:
+            trace(e)
+
+    # Get issues in cart
+    cart_items = [id for kind, id in request.session.get('cart', []) if kind == 'issue']
+
     context = {
         'products': page_products,
-        'categories': categories,
-        'current_category': int(category_id) if category_id else None,
+        'journals': journals,
+        'current_journal': int(journal_id) if journal_id else None,
         'search_query': search_query,
         'sort_by': sort_by,
         'total_products': paginator.count,
@@ -85,43 +83,5 @@ def catalogue_view(request: HttpRequest) -> HttpResponse:
             {'value': 'newest', 'label': 'Newest First'},
         ]
     }
-    
+
     return render(request, 'catalogue/catalogue.html', context)
-
-
-def product_detail_view(request: HttpRequest, product_id: int) -> HttpResponse:
-    """Individual product detail page"""
-    
-    product = get_object_or_404(Product, id=product_id)
-    
-    # get related products from same category
-    related_products = Product.objects.filter(
-        category=product.category
-    ).exclude(id=product_id)[:4]
-    
-    # check if user owns this product
-    user_owns_product = False
-    if request.user.is_authenticated:
-        try:
-            user = User.objects.get(email=request.user.email)
-            if user:
-                user_owns_product = Order.objects.filter(
-                    user=user,
-                    product=product,
-                    status=True
-                ).exists()
-        except (ObjectDoesNotExist, AttributeError):
-            pass
-    
-    # check if product is in cart
-    cart_items = request.session.get('cart', [])
-    in_cart = product.id in cart_items
-    
-    context = {
-        'product': product,
-        'related_products': related_products,
-        'user_owns_product': user_owns_product,
-        'in_cart': in_cart,
-    }
-    
-    return render(request, 'catalogue/product_detail.html', context)

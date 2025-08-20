@@ -1,190 +1,15 @@
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.db.models.query import QuerySet
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpRequest, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from django.db import transaction
-import json
+from ..utils import get_request_content, trace
+from ..models import Issue, Subscription
 
-from ..models import Product, User, Order
-
-
-@login_required
-def cart_view(request: HttpRequest) -> HttpResponse:
-    """Display cart items from session and payment method selection"""
-    # get cart from session
-    cart = request.session.get('cart', [])
-    
-    if cart:
-        # get list of products
-        products = Product.get_by_ids(cart)
-        cart_items = list(products)
-        total = sum(product.price for product in products)
-    else:
-        cart_items = []
-        total = 0
-    
-    context = {
-        'cart_items': cart_items,
-        'total': total,
-        'payment_methods': [
-            {'id': 'stripe', 'name': 'Credit Card (Stripe)', 'description': 'Pay with credit/debit card'},
-            {'id': 'paypal', 'name': 'PayPal', 'description': 'Pay with PayPal account'},
-            {'id': 'bank_transfer', 'name': 'Bank Transfer', 'description': 'Manual bank transfer'},
-        ]
-    }
-    
-    return render(request, 'cart/cart.html', context)
-
-
-@require_POST # type: ignore
-def add_to_cart(request: HttpRequest) -> HttpResponse:
-    """Add item to cart"""
-    try:
-        if request.content_type == 'application/json':
-            product_id = int(json.loads(request.body).get('product_id'))
-        else:
-            product_id = int(request.POST.get('product_id', -1))
-        
-        # verify product exists
-        product = get_object_or_404(Product, id=int(product_id))
-        
-        # get cart from session or create empty cart
-        cart = request.session.get('cart', [])
-        
-        # add if not already in cart
-        if product_id not in cart:
-            cart.append(product_id)
-            request.session['cart'] = cart
-            request.session.modified = True
-            messages.success(request, f'{product.name} added to cart')
-        else:
-            messages.info(request, f'{product.name} is already in cart')
-        
-        # save cart to session
-        request.session['cart'] = cart
-        request.session.modified = True
-        
-        return redirect(request.META.get('HTTP_REFERER', 'catalogue'))        
-
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)})
-
-
-@require_POST # type: ignore
-def remove_from_cart(request: HttpRequest) -> HttpResponse:
-    """Remove item from cart"""
-    try:
-        if request.content_type == 'application/json':
-            product_id = int(json.loads(request.body).get('product_id'))
-        else:
-            product_id = int(request.POST.get('product_id', -1))
-        
-        cart = request.session.get('cart', [])
-        
-        if product_id in cart:
-            product = Product.objects.get(id=product_id)
-            cart.remove(product_id)
-            request.session['cart'] = cart
-            request.session.modified = True
-            messages.success(request, f'{product.name} removed from cart')
-            
-        else:
-            messages.info(request, f'{product.name} is not in cart')
-
-        return redirect(request.META.get('HTTP_REFERER', 'catalogue'))        
-        
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)})
-
-
-@require_POST
-@transaction.atomic
-def process_payment(request: HttpRequest) -> HttpResponse:
-    """Process payment and create orders for PDFs"""
-    try:
-        data = json.loads(request.body)
-        payment_method = data.get('payment_method')
-        user_info = data.get('user_info', {})
-        
-        # validate payment method
-        valid_methods = ['stripe', 'paypal', 'bank_transfer']
-        if payment_method not in valid_methods:
-            return JsonResponse({'success': False, 'error': 'Invalid payment method'})
-        
-        # get cart from session
-        cart_product_ids = request.session.get('cart', [])
-        if not cart_product_ids:
-            return JsonResponse({'success': False, 'error': 'Cart is empty'})
-        
-        # get or create user
-        email = user_info.get('email')
-        if not email:
-            return JsonResponse({'success': False, 'error': 'Email is required'})
-        
-        user = User.get_by_email(email)
-        if not user:
-            # # create new user
-            # user = User(
-            #     first_name=user_info.get('first_name', ''),
-            #     last_name=user_info.get('last_name', ''),
-            #     email=email,
-            #     phone=user_info.get('phone', ''),
-            #     password=''  # Handle password separately during registration
-            # )
-            # user.register()
-            return JsonResponse({'success': False, 'error': 'Email is required'})
-        
-        # check if user already owns any of these pdfs
-        existing_orders = Order.objects.filter(
-            user=user,
-            product_id__in=cart_product_ids,
-            status=True  # successfully purchased
-        )
-        
-        if existing_orders.exists():
-            owned_products = [order.product.name for order in existing_orders]
-            return JsonResponse({
-                'success': False, 
-                'error': f'You already own: {", ".join(owned_products)}'
-            })
-        
-        # process payment (simulate for now)
-        payment_success = True  # TODO: Integrate with actual payment providers
-        
-        if not payment_success:
-            return JsonResponse({'success': False, 'error': 'Payment failed'})
-        
-        # create orders for each pdf
-        order_ids = []
-        for product in Product.get_by_ids(cart_product_ids):
-            order = Order(
-                product=product,
-                user=user,
-                price=product.price,
-                address='',  # Not needed for digital products
-                status=True if payment_method in ['stripe', 'paypal'] else False
-            )
-            order.placeOrder()
-            order_ids.append(order.id)
-        
-        # clear cart from session
-        request.session['cart'] = []
-        request.session.modified = True
-        
-        # TODO: send confirmation email with download links
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Purchase completed successfully! Check your email for download links.',
-            'order_ids': order_ids,
-            'payment_method': payment_method,
-            'redirect_url': '/my-library/'  # redirect to user's purchased PDFs
-        })
-        
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)})
+PAYMENT_METHODS = [
+    {'id': 'klix', 'name': 'Klix', 'description': 'Card, online bank, Google Pay, Apple Pay'},
+    {'id': 'bank_transfer', 'name': 'Bank transfer', 'description': 'Manual bank transfer'},
+]
 
 
 def get_cart_count(request: HttpRequest) -> HttpResponse:
@@ -193,30 +18,99 @@ def get_cart_count(request: HttpRequest) -> HttpResponse:
     return JsonResponse({'cart_count': len(cart)})
 
 
-# helper function to clear cart
+def get_item_from_request(request: HttpRequest) -> tuple[str, int]:
+    """Get item kind and id from a cart modification request"""
+    data = get_request_content(request)
+
+    kind = data.get('product_kind')
+    id = data.get('product_id')
+    return kind, id
+
+
+def get_issue_and_sub_ids(cart: list) -> tuple[[int], [int]]:
+    issue_ids = [id for kind, id in cart if kind == 'issue']
+    sub_ids = [id for kind, id in cart if kind == 'subscription']
+    return issue_ids, sub_ids
+
+
+def get_issues_and_subs(cart: list) -> tuple[QuerySet[Issue], QuerySet[Subscription]]:
+    """Get issues and subscriptions from cart as two lists."""
+    issue_ids, sub_ids = get_issue_and_sub_ids(cart)
+    return Issue.get_by_ids(issue_ids), Subscription.get_by_ids(sub_ids)
+
+
+def cart_view(request: HttpRequest) -> HttpResponse:
+    """Display cart items from session and payment method selection"""
+    # get cart from session
+    cart = request.session.get('cart', [])
+    issues, subs = get_issues_and_subs(cart)
+
+    total = sum(issue.price for issue in issues) + sum(sub.price for sub in subs)
+
+    context = {
+        'user': request.user,
+        'cart_issues': list(issues),
+        'cart_subscriptions': list(subs),
+        'total': total,
+        'payment_methods': PAYMENT_METHODS
+    }
+
+    return render(request, 'cart/cart.html', context)
+
+
+def verify_and_get_item_name(kind: str, id: int) -> str:
+    """Verify an item exists and get its name"""
+    if kind == 'issue':
+        return str(get_object_or_404(Issue, id=id))
+    elif kind == 'subscription':
+        return str(get_object_or_404(Subscription, id=id))
+    else:
+        raise TypeError(f'Unsupported product kind {kind}')
+
+
 def clear_cart(request: HttpRequest) -> HttpResponse:
     """Clear all items from cart"""
     request.session['cart'] = []
     request.session.modified = True
-    return JsonResponse({'success': True, 'message': 'Cart cleared'})
+    messages.success(request, 'Cart cleared')
+    return redirect(request.META.get('HTTP_REFERER', 'catalogue'))
 
 
-# Webhook for payment confirmations (if needed)
-@csrf_exempt
 @require_POST
-def payment_webhook(request: HttpRequest) -> HttpResponse:
-    """Handle payment webhooks from payment providers"""
-    try:
-        data = json.loads(request.body)
-        
-        # TODO: Implement webhook signature verification
-        if data.get('type') == 'payment_intent.succeeded':
-            # Update order status based on payment reference
-            payment_reference = data.get('payment_reference')
-            # You'd need to add a payment_reference field to your Order model
-            # or use another way to match payments to orders
-            
-        return JsonResponse({'status': 'success'})
-        
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)})
+def add_to_cart(request: HttpRequest) -> HttpResponse:
+    """Add item to cart"""
+    kind, id = get_item_from_request(request)
+    name = verify_and_get_item_name(kind, id)
+
+    # add if not already in cart
+    cart = request.session.get('cart', [])
+    if [kind, id] not in cart:
+        print(f"adding {kind} {id} to cart")
+        cart.append((kind, id))
+        request.session['cart'] = cart
+        request.session.modified = True
+        messages.success(request, f'{name} added to cart')
+    else:
+        messages.info(request, f'{name} is already in cart')
+
+    return redirect(request.META.get('HTTP_REFERER', 'catalogue'))
+
+
+@require_POST
+def remove_from_cart(request: HttpRequest) -> HttpResponse:
+    """Remove item from cart"""
+    kind, id = get_item_from_request(request)
+    name = verify_and_get_item_name(kind, id)
+
+    # remove if in cart
+    cart = request.session.get('cart', [])
+    if [kind, id] in cart:
+        cart.remove([kind, id])
+        request.session['cart'] = cart
+        request.session.modified = True
+        messages.success(request, f'{name} removed from cart')
+
+    else:
+        messages.info(request, f'{name} is not in cart')
+
+    return redirect(request.META.get('HTTP_REFERER', 'catalogue'))

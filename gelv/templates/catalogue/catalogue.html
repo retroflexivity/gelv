@@ -1,106 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'gelv/css/gelv.css' %}">
-    <title>Store</title>
-</head>
-<body>
-    <h1>Store</h1>
+{% extends "base.html" %}
+
+{% block title %}Catalogue{% endblock %}
+
+{% block content %}
+    {% include "blocks/search.html" %}
     
-    <!-- Search Section -->
-    <form method="get" class="search-section">
-        <div class="category-dropdown">
-            <select name="category">
-                <option value="">All categories</option>
-                {% for category in categories %}
-                    <option value="{{ category.id }}" 
-                            {% if category.id == current_category %}selected{% endif %}>
-                        {{ category.name }} ({{ category.product_count }})
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-        
-        <div class="search-input">
-            <input type="text" name="search" value="{{ search_query }}" 
-                   placeholder="Search journals...">
-        </div>
-        
-        <div class="search-button">
-            <button type="submit">Search</button>
-        </div>
-        
-        <input type="hidden" name="sort" value="{{ sort_by }}">
-    </form>
-    
-    <!-- Results Info -->
-    <div class="results-info">
-        <div class="product-count">
-            Showing {{ products.start_index }}-{{ products.end_index }} of {{ total_products }} items.
-            {% if search_query %}
-                for "{{ search_query }}"
-            {% endif %}
-        </div>
-        
-        <form method="get" class="sort-dropdown">
-            <!-- Preserve current filters -->
-            {% if search_query %}
-                <input type="hidden" name="search" value="{{ search_query }}">
-            {% endif %}
-            {% if current_category %}
-                <input type="hidden" name="category" value="{{ current_category }}">
-            {% endif %}
-            
-            <label for="sort">Sort by:</label>
-            <select name="sort" id="sort" onchange="this.form.submit()">
-                {% for option in sort_options %}
-                    <option value="{{ option.value }}" 
-                            {% if option.value == sort_by %}selected{% endif %}>
-                        {{ option.label }}
-                    </option>
-                {% endfor %}
-            </select>
-        </form>
-    </div>
-    
+    {% include "blocks/search-results.html" %}    
+
     <!-- Products List -->
     {% if products %}
         <div class="products-list">
             {% for product in products %}
                 <div class="product-item">
-                    <div class="product-info">
-                        <div class="product-name">
-                            <a href="{% url 'product_detail' product.id %}">{{ product.name }}</a>
+                    <div class="product-header" onclick="toggleDescription(this)">
+                        <div class="product-info">
+                            <div class="product-name">{{ product }}</div>
                         </div>
                         
-                        <div class="product-description">
-                            {{ product.description|truncatewords_html:10 }}
+                        <div class="product-meta">
+                            <div class="product-price">{{ product.price|floatformat:2 }}</div>
+                        
+                            <div class="product-status" onclick="event.stopPropagation()">
+                                {% if product.id in owned_product_ids %}
+                                    <span class="status-badge badge-owned">Owned</span>
+                                {% elif product.id|slugify in cart_items %}
+                                    <form method="post" action="{% url 'remove_from_cart' %}" style="display: flex;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="product_kind" value="issue">
+                                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                                        <button type="submit" class="status-badge button-remove">Remove from cart</button>
+                                    </form>
+                                {% else %}
+                                    <form method="post" action="{% url 'add_to_cart' %}" style="display: flex;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="product_kind" value="issue">
+                                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                                        <button type="submit" class="status-badge button-add">Add to cart</button>
+                                    </form>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
-                        
-                    <div class="product-meta">
-                        <div class="product-price">${{ product.price|floatformat:2 }}</div>
-                        
-                        <div class="product-status">
-                            {% if product.id in owned_product_ids %}
-                                <span class="status-badge badge-owned">Owned</span>
-                            {% elif product.id in cart_items %}
-                                <form method="post" action="{% url 'remove_from_cart' %}" style="display: inline;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="product_id" value="{{ product.id }}">
-                                    <button type="submit" class="status-badge button-remove">Remove from cart</button>
-                                </form>
-                            {% else %}
-                                <form method="post" action="{% url 'add_to_cart' %}" style="display: inline;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="product_id" value="{{ product.id }}">
-                                    <button type="submit" class="status-badge button-add">Add to cart</button>
-                                </form>
-                            {% endif %}
-                        </div>
+                    <div class="product-description">
+                        {{ product.description|linebreaks }}
                     </div>
                 </div>
             {% endfor %}
@@ -110,7 +52,7 @@
         {% if products.has_other_pages %}
             <div class="pagination">
                 {% if products.has_previous %}
-                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_category %}category={{ current_category }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ products.previous_page_number }}">
+                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_journal %}journal={{ current_journal }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ products.previous_page_number }}">
                         &laquo; Previous
                     </a>
                 {% endif %}
@@ -119,14 +61,14 @@
                     {% if products.number == num %}
                         <span class="current">{{ num }}</span>
                     {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
-                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_category %}category={{ current_category }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ num }}">
+                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_journal %}journal={{ current_journal }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ num }}">
                             {{ num }}
                         </a>
                     {% endif %}
                 {% endfor %}
                 
                 {% if products.has_next %}
-                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_category %}category={{ current_category }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ products.next_page_number }}">
+                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_journal %}journal={{ current_journal }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ products.next_page_number }}">
                         Next &raquo;
                     </a>
                 {% endif %}
@@ -135,7 +77,7 @@
     {% else %}
         <div class="no-products">
             <h3>No journals found</h3>
-            <p>Try adjusting your search criteria or browse all categories.</p>
+            <p>Try adjusting your search criteria or browse all journals.</p>
         </div>
     {% endif %}
 </div>
@@ -162,6 +104,19 @@
     
             document.documentElement.classList.remove('scroll-restoring');
         });
+
+        // show / hide item description on click
+        function toggleDescription(headerElement) {
+            const productItem = headerElement.closest('.product-item');
+    
+            // MIGHTNEED: close all other expanded items
+            // document.querySelectorAll('.product-item.expanded').forEach(item => {
+            //     if (item !== productItem) {
+            //         item.classList.remove('expanded');
+            //     }
+            // });
+    
+            productItem.classList.toggle('expanded');
+        }
     </script>
-</body>
-</html>
+{% endblock %}
