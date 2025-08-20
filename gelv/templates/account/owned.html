@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Purchased products{% endblock %}
+
+{% block content %}
+    {% include "blocks/search.html" %}
+    
+    {% include "blocks/search-results.html" %}    
+
+    <!-- Products List -->
+    {% if products %}
+        <div class="products-list">
+            {% for product in products %}
+                <div class="product-item">
+                    <div class="product-header" onclick="toggleDescription(this)">
+                        <div class="product-info">
+                            <div class="product-name">{{ product }}</div>
+                        </div>
+                        
+                        <div class="product-meta">
+                            <div class="product-status" onclick="event.stopPropagation()">
+								<a class="download-button" href={% url 'download' id=product.id %}>download</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product-description">
+                        {{ product.description|linebreaks }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if products.has_other_pages %}
+            <div class="pagination">
+                {% if products.has_previous %}
+                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_journal %}journal={{ current_journal }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ products.previous_page_number }}">
+                        &laquo; Previous
+                    </a>
+                {% endif %}
+                
+                {% for num in products.paginator.page_range %}
+                    {% if products.number == num %}
+                        <span class="current">{{ num }}</span>
+                    {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_journal %}journal={{ current_journal }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ num }}">
+                            {{ num }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if products.has_next %}
+                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_journal %}journal={{ current_journal }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ products.next_page_number }}">
+                        Next &raquo;
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="no-products">
+            <h3>No journals found</h3>
+            <p>Try adjusting your search criteria or browse all journals.</p>
+        </div>
+    {% endif %}
+</div>
+    <script>
+        // hide content until scroll is restored
+        document.documentElement.classList.add('scroll-restoring');
+
+        const stayForms = document.querySelectorAll('form[action*="/cart/"], form[class="sort-dropdown"]');
+        stayForms.forEach(form => {
+            function saveScroll() {
+                sessionStorage.setItem('scrollPosition', window.pageYOffset);
+            }
+            form.addEventListener('submit', saveScroll);
+            form.addEventListener('change', saveScroll);
+        });
+
+        // restore scroll position as early as possible
+        document.addEventListener('DOMContentLoaded', function() {
+            const scrollPosition = sessionStorage.getItem('scrollPosition');
+            if (scrollPosition) {
+                window.scrollTo(0, parseInt(scrollPosition));
+                sessionStorage.removeItem('scrollPosition');
+            }
+    
+            document.documentElement.classList.remove('scroll-restoring');
+        });
+
+        // show / hide item description on click
+        function toggleDescription(headerElement) {
+            const productItem = headerElement.closest('.product-item');
+    
+            // MIGHTNEED: close all other expanded items
+            // document.querySelectorAll('.product-item.expanded').forEach(item => {
+            //     if (item !== productItem) {
+            //         item.classList.remove('expanded');
+            //     }
+            // });
+    
+            productItem.classList.toggle('expanded');
+        }
+    </script>
+{% endblock %}
+

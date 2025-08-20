@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'gelv/css/gelv.css' %}">
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body>
+    <header class="main-header">
+        <!-- Logo/Brand -->
+        <div class="header-brand">
+            <a href="{% url 'home' %}" class="brand-link">
+                <h2>B&E</h2>
+            </a>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="header-nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="{% url 'subscribe' %}" class="nav-link {% if request.resolver_match.url_name == 'subscribe' %}active{% endif %}">
+                        Subscribe
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'catalogue' %}" class="nav-link {% if request.resolver_match.url_name == 'catalogue' %}active{% endif %}">
+                        Catalogue
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'owned' %}" class="nav-link {% if request.resolver_match.url_name == 'owned' %}active{% endif %}">
+                        Purchased
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Cart -->
+        {% if request.session.cart %}
+            <div class="header-cart">
+            <a href="{% url 'cart' %}" class="cart-link">Cart ({{ request.session.cart|length }})</a>
+            </div>
+        {% endif %}
+
+        <div class="header-auth">
+            {% if user.is_authenticated %}
+                <form method="post" action={% url 'logout' %}>
+                    {% csrf_token %}
+                    <button type=submit>log out</button>
+                </form>
+            {% else %}
+                <form method="post" action={% url 'login' %}>
+                    {% csrf_token %}
+                    <button type=submit>log in</button>
+                </form>
+            {% endif %}
+        </div>
+
+    </header>
+    <main>
+        {% if messages %}
+            <div class="error-messages">
+                {% for message in messages %}
+                    <div class="error">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+ 
+</body>
+</html>

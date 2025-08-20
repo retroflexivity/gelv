@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Subscribe{% endblock %}
+
+{% block content %}
+    <!-- Products List -->
+    {% if journals %}
+        <div class="products-list">
+            {% for journal in journals %}
+                <div class="product-item">
+                    <div class="product-header" onclick="toggleDescription(this)">
+                        <div class="product-info">
+                            <div class="product-name">{{ journal }}</div>
+                        </div>
+                        
+                        <div class="product-meta">
+                            <div class="product-status" onclick="event.stopPropagation()">
+                                <form method="post" action="{% url 'add_to_cart' %}" style="display: flex;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="product_kind" value="subscription">
+                                    <select name="product_id">
+                                        {% for subscription in journal.subscription_set.all %}
+                                            <option value={{ subscription.id }}>{{ subscription.duration }} months: {{ subscription.price|floatformat:2 }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="status-badge button-add">Add to cart</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                   <div class="product-description">
+                        {{ journal.description|linebreaks }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+    {% else %}
+        <div class="no-products">
+            <h3>No subscriptions found</h3>
+        </div>
+    {% endif %}
+</div>
+    <script>
+        // hide content until scroll is restored
+        document.documentElement.classList.add('scroll-restoring');
+
+        const stayForms = document.querySelectorAll('form[action*="/cart/"], form[class="sort-dropdown"]');
+        stayForms.forEach(form => {
+            function saveScroll() {
+                sessionStorage.setItem('scrollPosition', window.pageYOffset);
+            }
+            form.addEventListener('submit', saveScroll);
+            form.addEventListener('change', saveScroll);
+        });
+
+        // restore scroll position as early as possible
+        document.addEventListener('DOMContentLoaded', function() {
+            const scrollPosition = sessionStorage.getItem('scrollPosition');
+            if (scrollPosition) {
+                window.scrollTo(0, parseInt(scrollPosition));
+                sessionStorage.removeItem('scrollPosition');
+            }
+    
+            document.documentElement.classList.remove('scroll-restoring');
+        });
+
+        // show / hide item description on click
+        function toggleDescription(headerElement) {
+            const productItem = headerElement.closest('.product-item');
+    
+            // MIGHTNEED: close all other expanded items
+            // document.querySelectorAll('.product-item.expanded').forEach(item => {
+            //     if (item !== productItem) {
+            //         item.classList.remove('expanded');
+            //     }
+            // });
+    
+            productItem.classList.toggle('expanded');
+        }
+    </script>
+{% endblock %}
+

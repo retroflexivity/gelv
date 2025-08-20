@@ -1,0 +1,29 @@
+<div class="results-info">
+    <div class="product-count">
+        Showing {{ products.start_index }}-{{ products.end_index }} of {{ total_products }} items.
+        {% if search_query %}
+            for "{{ search_query }}"
+        {% endif %}
+    </div>
+    
+    <form method="get" class="sort-dropdown">
+        <!-- Preserve current filters -->
+        {% if search_query %}
+            <input type="hidden" name="search" value="{{ search_query }}">
+        {% endif %}
+        {% if current_journal %}
+            <input type="hidden" name="journal" value="{{ current_journal }}">
+        {% endif %}
+        
+        <label for="sort">Sort by:</label>
+        <select name="sort" id="sort" onchange="this.form.submit()">
+            {% for option in sort_options %}
+                <option value="{{ option.value }}" 
+                        {% if option.value == sort_by %}selected{% endif %}>
+                    {{ option.label }}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+

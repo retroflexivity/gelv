@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Log in or sign up{% endblock %}
+
+{% block content %}
+    <div class="auth-container">
+
+        <!-- login column -->
+        <div class="auth-column login-column">
+            <div class="auth-header">
+                <h2>Sign in to your account</h2>
+            </div>
+
+            <!-- login form -->
+            <form method="post" action={% url 'auth' %}>
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="{{ login_form.username.id_for_label }}">Email Address</label>
+                    {{ login_form.username }}
+                    {% if login_form.username.errors %}
+                        {{ login_form.username.errors }}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ login_form.password.id_for_label }}">Password</label>
+                    {{ login_form.password }}
+                    {% if login_form.password.errors %}
+                        {{ login_form.password.errors }}
+                    {% endif %}
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" name="login_submit">Sign In</button>
+                </div>
+
+                <div class="form-footer">
+                    <a href="{% url 'password_reset' %}">Forgot your password?</a>
+                </div>
+            </form>
+        </div>
+        <!-- signup column -->
+        <div class="auth-column signup-column">
+            <div class="auth-header">
+                <h2>Create account</h2>
+            </div>
+
+            <!-- django form errors for signup -->
+            {% if signup_form.errors %}
+                <div class="error-messages">
+                    {% for field, errors in signup_form.errors.items %}
+                        {% for error in errors %}
+                            <div class="error">{{ error }}</div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- signup form -->
+            <form method="post" action="{% url 'auth' %}">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="signup-email">Email address</label>
+                    <input type="email" id="signup-email" name="email" placeholder="Enter your email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" name="password1" placeholder="Create a password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signup-password-confirm">Confirm password</label>
+                    <input type="password" id="signup-password-confirm" name="password2" placeholder="Confirm your password" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" name="signup_submit">Create account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

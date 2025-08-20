@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Cart{% endblock %}
+
+{% block content %}
+    {% if cart_issues or cart_subscriptions %}
+        <div class="cart-container">
+            <!-- Cart Items -->
+            <div class="cart-items">
+                <div class="cart-header">
+                    <h2>Subscriptions ({{ cart_subscriptions|length }})</h2>
+                </div>
+
+                {% for item in cart_subscriptions %}
+                <div class="cart-item">
+                    <div class="item-details">
+                        <div class="item-name">
+                            {{ item }}
+                        </div>
+                    </div>
+
+                    <div class="item-price">${{ item.price|floatformat:2 }}</div>
+
+                    <form method="post" action="{% url 'remove_from_cart' %}" class="remove-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="product_kind" value="subscription">
+                        <input type="hidden" name="product_id" value="{{ item.id }}">
+                        <button type="submit" class="remove-btn">Remove</button>
+                    </form>
+                </div>
+                {% endfor %}
+
+                <div class="cart-header">
+                    <h2>Journals ({{ cart_issues|length }})</h2>
+                </div>
+
+                {% for issue in cart_issues %}
+                <div class="cart-item">
+                    <div class="item-details">
+                        <div class="item-name">
+                            {{ issue }}
+                        </div>
+                    </div>
+
+                    <div class="item-price">${{ issue.price|floatformat:2 }}</div>
+
+                    <form method="post" action="{% url 'remove_from_cart' %}" class="remove-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="product_kind" value="issue">
+                        <input type="hidden" name="product_id" value="{{ issue.id }}">
+                        <button type="submit" class="remove-btn">Remove</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <div class="summary-header">
+                    <h3>Order Summary</h3>
+                </div>
+                
+                <div class="summary-content">
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span>${{ total|floatformat:2 }}</span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <span>Total:</span>
+                        <span>${{ total|floatformat:2 }}</span>
+                    </div>
+
+                    <!-- Payment Methods -->
+                    <form method="post" action="{% url 'checkout' %}" class="payment-section">
+                        {% csrf_token %}
+                        <h4>Payment Method</h4>
+                        
+                        {% for method in payment_methods %}
+                            <label for="payment-{{ method.id }}" class="payment-method">
+                                <input type="radio" name="payment_method" value="{{ method.id }}" 
+                                       id="payment-{{ method.id }}" {% if forloop.first %}checked{% endif %}>
+                                <div class="payment-content">
+                                    <div class="payment-method-name">{{ method.name }}</div>
+                                    <div class="payment-method-desc">{{ method.description }}</div>
+                                </div>
+                            </label>
+                        {% endfor %}
+
+                        <div {% if user.is_authenticated %}style="display: none;"{% endif %}>
+                            <h4>Email</h4>
+                            <input type="email" name="email" id="email" required value={{ user.email }}>
+                        </div>
+                        
+                        <button type="submit" class="checkout-btn">
+                            <span class="loading-spinner"></span>
+                            <span class="btn-text">Complete Purchase</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-cart">
+            <p>Your cart is empty.</p>
+        </div>
+        <a href="{% url 'catalogue' %}" class="continue-shopping">Browse Products</button>
+    {% endif %}
+{% endblock %}
