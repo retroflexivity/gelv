@@ -73,4 +73,4 @@ class CustomAdminSite(admin.AdminSite):
         return app_dict
 
 
-admin_site = trace(CustomAdminSite(name="customadmin"))
+admin_site = CustomAdminSite(name="customadmin")
