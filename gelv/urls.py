@@ -1,8 +1,7 @@
-from django.contrib import admin
 from django.contrib.auth.views import LogoutView
 from django.urls import include, path
 from gelv.views import home, catalogue, subscribe, cart, auth, checkout, owned, download
-from gelv.admin.admin_site import admin_site
+from gelv.admin import admin_site
 
 urlpatterns = [
     # Home page

@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models.query import QuerySet
 from django.http.response import HttpResponse
 from django.http.request import HttpRequest
 from django.db.models import Q, Count
@@ -40,7 +41,7 @@ def catalogue_view(request: HttpRequest) -> HttpResponse:
         'name': 'journal__name'
     }.get(sort_by, 'name')
 
-    products = Issue.objects.filter(filters).order_by(order_by)
+    products = Issue.get_objects().filter(filters).order_by(order_by)
 
     # get all journals for filter dropdown + product number
     journals = Journal.objects.all().annotate(issue_count=Count('issue'))
@@ -55,7 +56,7 @@ def catalogue_view(request: HttpRequest) -> HttpResponse:
         page_products = paginator.page(paginator.num_pages)
 
     # Get user's owned products if logged in
-    owned_product_ids = []
+    owned_product_ids: QuerySet[Issue, int] = QuerySet()
     if request.user.is_authenticated:
         try:
             user = User.get_by_email(request.user.email)

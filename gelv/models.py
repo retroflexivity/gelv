@@ -3,10 +3,10 @@ from django.utils import timezone
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db.models import Sum
 from django.db.models.query import QuerySet
-from typing import TypeVar, cast
+from typing import TypeVar, cast, Optional
 import datetime
 from dateutil.relativedelta import relativedelta
-from gelv.utils import diff_month, trace
+from gelv.utils import diff_month, add_month, trace, current_month_year
 from django.db.models.manager import Manager
 
 P = TypeVar('P', bound='AbstractProduct')
@@ -63,7 +63,7 @@ class User(AbstractUser):
 
     def get_owned_issues(self) -> QuerySet['Issue']:
         """Get all issues a user owns, including from subscriptions."""
-        issues = Issue.objects.filter(issueorder__payment__user_id=self.id)
+        issues = Issue.get_objects(all=True).filter(issueorder__payment__user_id=self.id)
         sub_orders = SubscriptionOrder.objects.filter(payment__user__id=self.id)
         return issues.union(*map(lambda x: x.get_issues(), sub_orders))
 
@@ -85,6 +85,9 @@ class Journal(models.Model):
     def get_issue_number_from_date(self, date: datetime.datetime) -> int:
         return diff_month(date, self.anno) + 1  # issues are 1-base numbered
 
+    def get_subscriptions(self, all=False) -> QuerySet['Subscription', 'Subscription']:
+        return Subscription.get_objects(all=all).filter(journal=self.id)
+
     def __str__(self):
         return self.name
 
@@ -97,12 +100,14 @@ class AbstractProduct(models.Model):
 
     id = models.AutoField(primary_key=True)
 
-    journal = models.ForeignKey(Journal, on_delete=models.CASCADE)
     price = models.FloatField(default=0.0)
+    active = models.BooleanField(default=True)
 
     @classmethod
-    def get_by_ids(cls: type[P], ids: list[int]) -> QuerySet['P']:
-        return cast('QuerySet[P]', cls.objects.filter(id__in=ids))
+    def get_objects(cls: type[P], ids: Optional[list[int]] = None, all=False) -> QuerySet['P']:
+        id_filter = {'id__in': ids} if ids else {}
+        active_filter = {} if all else {'active': True}
+        return cast('QuerySet[P]', cls.objects.filter(**id_filter).filter(**active_filter))
 
     class Meta:
         abstract = True
@@ -117,6 +122,10 @@ class Issue(AbstractProduct):
     journal = models.ForeignKey(Journal, on_delete=models.CASCADE)
     number = models.IntegerField()
     description = models.TextField(default='', blank=True, null=True)
+
+    @property
+    def date(self):
+        return add_month(self.journal.anno, self.number)
 
     def __str__(self):
         date = self.journal.anno + relativedelta(months=self.number - 1)
@@ -139,7 +148,7 @@ class Subscription(AbstractProduct):
         """Get existing issues included in the subscription from a specific date"""
         start_number = self.journal.get_issue_number_from_date(start)
         numbers = range(start_number, start_number + self.duration)
-        return Issue.objects.filter(journal=self.journal, number__in=numbers)
+        return Issue.get_objects(all=True).filter(journal=self.journal, number__in=numbers)
 
 
 class Payment(models.Model):
@@ -209,9 +218,22 @@ class SubscriptionOrder(AbstractOrder):
     that is in range of any of his subscriptions.
     """
     product = models.ForeignKey(Subscription, on_delete=models.CASCADE)
-    starts = models.DateField(default=timezone.now()
-                              .replace(day=1))
+    starts = models.DateField(default=current_month_year)
 
     def get_issues(self) -> QuerySet[Issue]:
         """Get existing issues included in the subscription order."""
         return self.product.get_issues(self.starts)
+
+
+class Post(models.Model):
+    """
+    A news post to be shown in the feed.
+    """
+    objects: Manager['Post']
+
+    title = models.TextField()
+    text = models.TextField()
+    date = models.DateField(default=timezone.now)
+
+    def __str__(self):
+        return self.title

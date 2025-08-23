@@ -19,7 +19,7 @@
                                     {% csrf_token %}
                                     <input type="hidden" name="product_kind" value="subscription">
                                     <select name="product_id">
-                                        {% for subscription in journal.subscription_set.all %}
+                                        {% for subscription in journal.get_subscriptions %}
                                             <option value={{ subscription.id }}>{{ subscription.duration }} months: {{ subscription.price|floatformat:2 }}</option>
                                         {% endfor %}
                                     </select>

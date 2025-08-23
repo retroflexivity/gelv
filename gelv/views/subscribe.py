@@ -27,9 +27,10 @@ def subscribe_view(request: HttpRequest) -> HttpResponse:
 
     journals = Journal.objects.annotate(sub_count=Count('subscription')).filter(sub_count__gt=0)
 
+    print(journals[0].get_subscriptions())
+
     context = {
         'journals': journals,
-        'cart_items': request.session.get('cart', []),
         'owned_subscription_ids': get_user_subs(request.user),
     }
 

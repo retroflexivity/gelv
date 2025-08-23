@@ -22,12 +22,12 @@ def get_item_from_request(request: HttpRequest) -> tuple[str, int]:
     """Get item kind and id from a cart modification request"""
     data = get_request_content(request)
 
-    kind = data.get('product_kind')
-    id = data.get('product_id')
+    kind = data.get('product_kind', 'none')
+    id = int(data.get('product_id', 0))
     return kind, id
 
 
-def get_issue_and_sub_ids(cart: list) -> tuple[[int], [int]]:
+def get_issue_and_sub_ids(cart: list) -> tuple[list[int], list[int]]:
     issue_ids = [id for kind, id in cart if kind == 'issue']
     sub_ids = [id for kind, id in cart if kind == 'subscription']
     return issue_ids, sub_ids
@@ -36,7 +36,7 @@ def get_issue_and_sub_ids(cart: list) -> tuple[[int], [int]]:
 def get_issues_and_subs(cart: list) -> tuple[QuerySet[Issue], QuerySet[Subscription]]:
     """Get issues and subscriptions from cart as two lists."""
     issue_ids, sub_ids = get_issue_and_sub_ids(cart)
-    return Issue.get_by_ids(issue_ids), Subscription.get_by_ids(sub_ids)
+    return Issue.get_objects(ids=issue_ids), Subscription.get_objects(ids=sub_ids)
 
 
 def cart_view(request: HttpRequest) -> HttpResponse:
