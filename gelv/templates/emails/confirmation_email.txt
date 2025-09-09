@@ -1,0 +1,12 @@
+Dear {{ user.first_name|default:user.username }},
+
+Thank you for signing up for {{ site_name }}!
+
+To complete your registration, please click the link below to confirm your email address:
+
+{{ confirmation_url }}
+
+If you didn't create an account with us, please ignore this email.
+
+Thanks,
+The {{ site_name }} Team

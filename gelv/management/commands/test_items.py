@@ -5,15 +5,16 @@ from datetime import date
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        be_cat = Journal.objects.create(name="Buhgalterija un ekonomika", anno=date(year=2024, month=1, day=1))
+        be_cat = Journal.objects.create(name="Buhgalterija un ekonomika")
+        be_cat = Journal.objects.create(name="Gramatvedības prakse")
 
-        Issue.objects.create(journal=be_cat, number=16, description="BE something", price=0.0)
-        Issue.objects.create(journal=be_cat, number=17, description="BE something", price=0.0)
-        Issue.objects.create(journal=be_cat, number=18, description="BE something", price=0.0)
-        Issue.objects.create(journal=be_cat, number=19, description="BE something", price=0.0)
-        Issue.objects.create(journal=be_cat, number=20, description="BE something", price=0.0)
-        Issue.objects.create(journal=be_cat, number=21, description="BE something", price=0.0)
-        Issue.objects.create(journal=be_cat, number=22, description="BE something", price=0.0)
+        Issue.objects.create(journal=be_cat, number=184, description="BE something", price=1.0)
+        Issue.objects.create(journal=be_cat, number=185, description="BE something", price=1.0)
+        Issue.objects.create(journal=be_cat, number=186, description="BE something", price=1.0)
+        Issue.objects.create(journal=be_cat, number=187, description="BE something", price=1.0)
+        Issue.objects.create(journal=be_cat, number=188, description="BE something", price=1.0)
+        Issue.objects.create(journal=be_cat, number=189, description="BE something", price=1.0)
+        Issue.objects.create(journal=be_cat, number=190, description="BE something", price=1.0)
 
         Subscription.objects.create(journal=be_cat, duration=3, price=1.0)
         Subscription.objects.create(journal=be_cat, duration=6, price=2.0)

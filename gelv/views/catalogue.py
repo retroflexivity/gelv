@@ -5,8 +5,9 @@ from django.db.models.query import QuerySet
 from django.http.response import HttpResponse
 from django.http.request import HttpRequest
 from django.db.models import Q, Count
-from ..models import Issue, Journal, IssueOrder, User
-from ..utils import trace
+from gelv.models import Issue, Journal, IssueOrder, User
+from gelv.cart import Cart
+from gelv.utils import trace
 
 
 def catalogue_view(request: HttpRequest) -> HttpResponse:
@@ -66,7 +67,8 @@ def catalogue_view(request: HttpRequest) -> HttpResponse:
             trace(e)
 
     # Get issues in cart
-    cart_items = [id for kind, id in request.session.get('cart', []) if kind == 'issue']
+    cart_items = [issue.product.id for issue in Cart.from_session(request.session).issues]
+    trace(f"{cart_items=}")
 
     context = {
         'products': page_products,

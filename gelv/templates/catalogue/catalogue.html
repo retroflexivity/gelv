@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Catalogue{% endblock %}
 
@@ -11,30 +12,31 @@
     {% if products %}
         <div class="products-list">
             {% for product in products %}
-                <div class="product-item">
+                <div class="product-item has-description">
                     <div class="product-header" onclick="toggleDescription(this)">
                         <div class="product-info">
                             <div class="product-name">{{ product }}</div>
                         </div>
                         
                         <div class="product-meta">
-                            <div class="product-price">{{ product.price|floatformat:2 }}</div>
+                            {% if product.discounted_price %}<div class="discount">{{ product.formatted_discounted_price }}</div>{% endif %}
+                            <div class="product-price {% if product.discounted_price %}crossed{% endif %}">{{ product.formatted_price }}</div>
                         
                             <div class="product-status" onclick="event.stopPropagation()">
                                 {% if product.id in owned_product_ids %}
                                     <span class="status-badge badge-owned">Owned</span>
-                                {% elif product.id|slugify in cart_items %}
+                                {% elif product.id in cart_items %}
                                     <form method="post" action="{% url 'remove_from_cart' %}" style="display: flex;">
                                         {% csrf_token %}
-                                        <input type="hidden" name="product_kind" value="issue">
-                                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                                        <input type="hidden" name="type" value="issue">
+                                        <input type="hidden" name="id" value="{{ product.id }}">
                                         <button type="submit" class="status-badge button-remove">Remove from cart</button>
                                     </form>
                                 {% else %}
                                     <form method="post" action="{% url 'add_to_cart' %}" style="display: flex;">
                                         {% csrf_token %}
-                                        <input type="hidden" name="product_kind" value="issue">
-                                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                                        <input type="hidden" name="type" value="issue">
+                                        <input type="hidden" name="id" value="{{ product.id }}">
                                         <button type="submit" class="status-badge button-add">Add to cart</button>
                                     </form>
                                 {% endif %}
@@ -66,7 +68,7 @@
                         </a>
                     {% endif %}
                 {% endfor %}
-                
+
                 {% if products.has_next %}
                     <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_journal %}journal={{ current_journal }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ products.next_page_number }}">
                         Next &raquo;
@@ -80,7 +82,6 @@
             <p>Try adjusting your search criteria or browse all journals.</p>
         </div>
     {% endif %}
-</div>
     <script>
         // hide content until scroll is restored
         document.documentElement.classList.add('scroll-restoring');
@@ -106,5 +107,5 @@
         });
 
     </script>
-    <script src="{% static 'gelv/gelv/js/toggle-description.js' %}">
+    <script src="{% static 'gelv/js/toggle-description.js' %}"></script>
 {% endblock %}

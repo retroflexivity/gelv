@@ -1,0 +1,7 @@
+Dear {{ user.first_name|default:user.username }},
+
+Your order {{ invoice.number }} is awaiting payment. Please find an invoice attached. Once the payment is processed, your payment will be available at {{ owned_url }}.
+
+Thanks,
+The {{ site_name }} Team
+

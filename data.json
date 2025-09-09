@@ -1,0 +1,424 @@
+[
+  {
+    "model": "gelv.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$QmZ0J0yOnmfLCsv164Wwt0$l+6ZawoOPz4zgXi0/6JIDbo8bfxRH9tb+nRVc72kWYA=",
+      "last_login": "2025-09-03T18:34:05.320Z",
+      "is_superuser": false,
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "email": "ark.shaldov@gmail.com",
+      "date_joined": "2025-08-15T07:57:21.627Z",
+      "is_active": true,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "gelv.user",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$uSBFbT70NpkIQCxE5xewlW$9AIQHK6h2lDnrgdc9UncZgV247MdN2wmJaeAJSJvPGA=",
+      "last_login": "2025-08-27T17:51:34.138Z",
+      "is_superuser": true,
+      "first_name": "",
+      "last_name": "",
+      "is_staff": true,
+      "email": "ark@gmail.com",
+      "date_joined": "2025-08-15T08:12:43.717Z",
+      "is_active": true,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "gelv.user",
+    "pk": 3,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$ss9uLnUEE2InJvCmWL6UdI$hgeDLmDEYVILpN5N7oL9bgnPk0lUNxBByZ5euGQrk1o=",
+      "last_login": null,
+      "is_superuser": false,
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "email": "test@test.com",
+      "date_joined": "2025-08-27T16:46:49.844Z",
+      "is_active": true,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "gelv.user",
+    "pk": 4,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$tnsHDTn1oOgZbiKPyXZ6L6$ljMfI7EddCQhpNy7aeISb1qHuoSwaXfMMR9S0dZLf48=",
+      "last_login": "2025-08-27T17:04:00.055Z",
+      "is_superuser": false,
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "email": "test@gmail.com",
+      "date_joined": "2025-08-27T16:48:04.077Z",
+      "is_active": true,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "gelv.user",
+    "pk": 5,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$O0U7R8vXukpvSOSUZmaQvo$wB5WoifYxaxt3Dy9GO+HU7Cok2vndRmKwY8Sg1fX3OE=",
+      "last_login": null,
+      "is_superuser": false,
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "email": "test@testtest.com",
+      "date_joined": "2025-08-27T17:03:28.936Z",
+      "is_active": true,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "gelv.journal",
+    "pk": 1,
+    "fields": {
+      "name": "Buhgalterija un ekonomika",
+      "description": "Sed porttitor tortor elit, id fermentum sem faucibus vitae. Suspendisse nec eros ante. Nam ullamcorper, risus et porttitor gravida, mi arcu luctus nisl, in ornare lacus eros sit amet magna.",
+      "frequency": 12
+    }
+  },
+  {
+    "model": "gelv.journal",
+    "pk": 2,
+    "fields": {
+      "name": "Gramatvedības prakse",
+      "description": "Sed porttitor tortor elit, id fermentum sem faucibus vitae. Suspendisse nec eros ante. Nam ullamcorper, risus et porttitor gravida, mi arcu luctus nisl, in ornare lacus eros sit amet magna. Pellentesque in bibendum tortor, ut bibendum tortor. Donec at leo in lorem vehicula lobortis sit amet vitae urna.",
+      "frequency": 12
+    }
+  },
+  {
+    "model": "gelv.issue",
+    "pk": 1,
+    "fields": {
+      "price": 0.0,
+      "active": true,
+      "journal": 1,
+      "number": 16,
+      "description": "Sed porttitor tortor elit, id fermentum sem faucibus vitae. Suspendisse nec eros ante. Nam ullamcorper, risus et porttitor gravida, mi arcu luctus nisl, in ornare lacus eros sit amet magna. Pellentesque in bibendum tortor, ut bibendum tortor. Donec at leo in lorem vehicula lobortis sit amet vitae urna.",
+      "file": ""
+    }
+  },
+  {
+    "model": "gelv.issue",
+    "pk": 2,
+    "fields": {
+      "price": 0.0,
+      "active": true,
+      "journal": 1,
+      "number": 17,
+      "description": "Sed porttitor tortor elit, id fermentum sem faucibus vitae. Suspendisse nec eros ante. Nam ullamcorper, risus et porttitor gravida, mi arcu luctus nisl, in ornare lacus eros sit amet magna. Pellentesque in bibendum tortor, ut bibendum tortor. Donec at leo in lorem vehicula lobortis sit amet vitae urna.",
+      "file": ""
+    }
+  },
+  {
+    "model": "gelv.issue",
+    "pk": 3,
+    "fields": {
+      "price": 0.0,
+      "active": true,
+      "journal": 1,
+      "number": 18,
+      "description": "BE something",
+      "file": ""
+    }
+  },
+  {
+    "model": "gelv.issue",
+    "pk": 4,
+    "fields": {
+      "price": 0.0,
+      "active": true,
+      "journal": 1,
+      "number": 19,
+      "description": "Sed porttitor tortor elit, id fermentum sem faucibus vitae. Suspendisse nec eros ante. Nam ullamcorper, risus et porttitor gravida, mi arcu luctus nisl, in ornare lacus eros sit amet magna. Pellentesque in bibendum tortor, ut bibendum tortor. Donec at leo in lorem vehicula lobortis sit amet vitae urna.",
+      "file": ""
+    }
+  },
+  {
+    "model": "gelv.issue",
+    "pk": 5,
+    "fields": {
+      "price": 0.0,
+      "active": true,
+      "journal": 1,
+      "number": 20,
+      "description": "BE something",
+      "file": ""
+    }
+  },
+  {
+    "model": "gelv.issue",
+    "pk": 6,
+    "fields": {
+      "price": 0.0,
+      "active": true,
+      "journal": 1,
+      "number": 21,
+      "description": "BE something",
+      "file": ""
+    }
+  },
+  {
+    "model": "gelv.issue",
+    "pk": 7,
+    "fields": {
+      "price": 0.0,
+      "active": true,
+      "journal": 1,
+      "number": 22,
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque volutpat nisi a velit pulvinar, ut venenatis elit malesuada. Nullam consectetur sollicitudin massa ac porta. Etiam pretium sit amet elit sit amet faucibus. Pellentesque quis velit sed nisl tincidunt tincidunt id eget felis. In vel bibendum neque, fermentum porta purus. Fusce efficitur nisi quis lobortis mollis. Proin mattis justo diam, sit amet sodales nisl faucibus et. Sed in magna orci. Vivamus rutrum, dolor quis mollis varius, sem justo bibendum ante, sed pharetra turpis nulla id sem.Ut rutrum nisl sit amet tortor faucibus, ut cursus massa mattis. Praesent diam elit, imperdiet non diam eu, molestie gravida nisl. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Aliquam dignissim sed dui et condimentum. Mauris et laoreet ex. Duis tempus mattis massa a molestie. Maecenas sed ex sed neque convallis laoreet. Nullam tempus lectus orci, sed tristique nibh ultrices sed. In elit ligula, tincidunt sit amet semper sit amet, auctor eu orci. Nullam tincidunt arcu et viverra varius. Pellentesque at sodales massa. Fusce et luctus tellus. Duis tincidunt lorem eget risus semper, sed rhoncus erat vehicula. Fusce sollicitudin mi sed maximus eleifend. Proin nibh quam, efficitur id efficitur hendrerit, eleifend a enim. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Proin porta velit erat, vel elementum justo ullamcorper ut. Fusce ornare vehicula eros eu convallis. Integer at ullamcorper libero, et elementum nulla. Vestibulum pharetra vulputate magna sit amet sodales. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur finibus scelerisque euismod. Nullam arcu quam, varius ac hendrerit ac, blandit dignissim ex. Praesent non tellus luctus, bibendum sapien scelerisque, lobortis ipsum. Aliquam mattis varius tempus. Ut interdum aliquet massa, et sodales justo porta quis.Suspendisse sagittis egestas viverra. Ut pharetra rhoncus vulputate. Vestibulum risus nibh, vulputate quis velit non, euismod auctor metus. Sed venenatis tempor imperdiet. Sed fermentum, eros a sagittis sagittis, justo ex fermentum arcu, ac dapibus tellus ipsum nec sem. Curabitur vestibulum elit nibh, non commodo leo iaculis a. Aliquam viverra sodales leo ut consectetur. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Sed in scelerisque nibh, sed eleifend enim. Integer ac venenatis nibh. Nulla id dapibus magna. Maecenas mollis sit amet odio at fermentum. Duis tempor quis dui et commodo. Aliquam tristique nisl sit amet diam interdum, vitae ornare sapien auctor. In vitae lacinia purus. Sed tempus malesuada tristique. Quisque viverra ac nulla pellentesque bibendum. Curabitur quis dignissim metus. Nam consequat tortor at ante vulputate molestie. Fusce quam diam, suscipit sed imperdiet vitae, hendrerit at nisl. Sed id massa sit amet nibh posuere ultrices eu vitae urna. Maecenas dignissim leo massa, at suscipit nisl suscipit eget. Nam convallis leo et felis mattis vestibulum. Nullam tincidunt arcu et viverra varius. Aliquam et auctor est. Pellentesque fringilla mattis leo, placerat tempus risus. Mauris et ex nunc.Phasellus feugiat pretium laoreet. Praesent leo enim, fringilla eget metus et, blandit tempor quam. Fusce molestie orci ante, et vehicula eros sodales vel. Donec sed elementum nulla, vel auctor nunc. Aliquam erat volutpat. Aenean pharetra orci at nunc condimentum sagittis. Nullam vel massa porttitor, porta sem at, dignissim mauris. Aenean gravida odio efficitur diam maximus consectetur ut id orci. Nulla tincidunt tincidunt sapien, in vestibulum neque sollicitudin id. Quisque auctor purus vel nunc maximus, eget tristique quam suscipit. Sed et lacus molestie, pharetra ipsum dictum, molestie nisi. Donec congue ante vitae nisi scelerisque, quis dapibus nibh feugiat.Vivamus tempus velit non nisl tristique, non luctus quam pretium. Maecenas eu sapien orci. Etiam blandit tempor vehicula. Aliquam auctor magna interdum urna tempor bibendum vel eu erat. Aenean ultrices, mauris sed dapibus pretium, lacus lorem condimentum ex, ut porttitor justo nibh at justo. Sed consectetur risus a turpis tristique, vel accumsan erat viverra. Ut sed arcu ante. Aenean pellentesque sollicitudin efficitur. Pellentesque sit amet sem odio.Pellentesque ante lacus, lobortis eget egestas ut, iaculis non nulla. Quisque pulvinar, sapien in ornare gravida, massa lacus luctus felis, vel fermentum neque lacus ut lacus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam in urna non nunc vestibulum posuere et sit amet mi. Fusce volutpat sapien arcu, sed accumsan purus sollicitudin nec. Proin commodo, metus quis facilisis iaculis, mi augue ultrices metus, quis gravida massa lectus nec turpis. Pellentesque ex magna, placerat id felis non, euismod gravida leo. Proin commodo, metus quis facilisis iaculis, mi augue ultrices metus, quis gravida massa lectus nec turpis. Pellentesque egestas a eros at tempus. Nullam non eros fermentum, fringilla metus a, rutrum felis. Etiam consectetur porttitor ex, ut luctus ipsum cursus in. Suspendisse vel vulputate ex, finibus ultricies odio. Nullam lacinia laoreet neque sed porttitor. Proin vel ipsum eget tellus varius aliquet. Curabitur sed metus aliquam, scelerisque purus et, malesuada ex. Vestibulum placerat nisl eget sapien convallis consequat. Ut sit amet blandit eros. Duis orci sem, tempor sed convallis ac, placerat id massa.Curabitur bibendum ullamcorper metus quis eleifend. Cras sed bibendum orci. Vivamus mollis bibendum magna in venenatis. Curabitur convallis a est sed consectetur. In laoreet hendrerit dolor, in ultricies elit tincidunt at. Aliquam erat volutpat. In bibendum augue ac nibh euismod, lacinia posuere tellus vulputate. Lorem ipsum dolor sit amet, consectetur adipiscing elit. In posuere nunc massa, a ullamcorper justo malesuada ac. Aliquam gravida lectus eu porta euismod.Mauris mattis nulla ac sollicitudin porta. Integer vehicula lacus vitae dictum egestas. Duis orci sem, tempor sed convallis ac, placerat id massa.Curabitur bibendum ullamcorper metus quis eleifend. Nullam felis elit, dignissim quis diam eget, efficitur tempus nisi. Fusce suscipit risus eu mauris maximus facilisis. Sed quis ullamcorper eros. Aliquam mattis varius tempus. Aenean imperdiet finibus bibendum. Quisque tempor mi vel cursus rutrum. Vivamus tempor, lectus sed fringilla iaculis, erat nisi placerat risus, a bibendum mi turpis nec nulla. Maecenas in interdum diam. Integer fermentum odio eget feugiat iaculis. Sed semper risus in porta ullamcorper. Morbi ante magna, iaculis sed laoreet porta, malesuada sit amet enim. Etiam tristique tortor eu lacus volutpat viverra. Curabitur quis justo a tortor maximus varius sed ac lectus. Quisque hendrerit est et ante feugiat, et gravida nulla feugiat. Phasellus fermentum egestas turpis a dictum. Quisque ut eros nec ipsum posuere facilisis quis nec sapien. Quisque consequat velit dui, id elementum tellus rhoncus nec. Integer finibus leo sit amet pharetra dignissim. Vestibulum vitae dolor id purus auctor malesuada. Ut congue auctor posuere. Nam ullamcorper, risus et porttitor gravida, mi arcu luctus nisl, in ornare lacus eros sit amet magna. Vivamus varius semper erat, ultricies scelerisque sapien malesuada id. Quisque tincidunt ac quam vitae tristique. Mauris porta dui nec elementum lacinia. Interdum et malesuada fames ac ante ipsum primis in faucibus. Curabitur dui eros, dictum feugiat ex in, laoreet fringilla orci. Nunc euismod sapien eget ultricies porta. Donec dictum egestas est, sed consectetur felis sollicitudin et.Ut mi urna, facilisis non lacinia in, lobortis ut enim. Maecenas sagittis nisl id sem ultricies, non congue massa tempus. Aliquam auctor elit aliquam nulla sodales convallis. Sed in magna orci. Nullam commodo fermentum dictum. Quisque tortor ligula, pulvinar in lacus eu, gravida feugiat erat. Curabitur imperdiet sed lacus tincidunt feugiat. Suspendisse eleifend ex lacus, a luctus justo malesuada et. Suspendisse eleifend ex lacus, a luctus justo malesuada et. Maecenas varius non turpis sed mattis. Donec porta odio eget eros dictum fringilla. Mauris porttitor est et risus dignissim blandit. Sed ornare neque urna, vel congue neque venenatis ac. Donec semper justo eget imperdiet gravida.Aliquam quis aliquam diam, ac porttitor sapien. Aenean ultricies ligula eu lorem varius, at sagittis velit faucibus. Ut fermentum lacus quis finibus aliquam. Donec a urna mollis, auctor mauris ultrices, egestas odio. Etiam vel sagittis massa, vel dictum mi. Praesent semper, ipsum eu faucibus semper, neque dolor cursus eros, vel mattis lacus sem eget nibh. Sed in lectus ac nulla aliquet ullamcorper vel vel odio. Nunc lobortis sit amet nisi vitae molestie. Nullam euismod nibh eu aliquam euismod. Nam placerat enim et laoreet scelerisque. In dignissim tortor justo, eget efficitur ipsum commodo id. Sed pretium ex est, eget tincidunt justo auctor quis.Ut non eros tempus, elementum diam a, blandit velit. Pellentesque eu justo odio.Vestibulum porttitor lectus vel nisi pretium porttitor. Vestibulum lectus dui, commodo non tincidunt ut, viverra non nisl. Duis urna neque, lobortis in ante at, molestie auctor massa. Quisque non hendrerit ipsum. Suspendisse porttitor euismod dapibus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Mauris rutrum purus quis justo dignissim, sed ultrices tortor gravida. Pellentesque sit amet sem massa. Duis id accumsan neque, sed bibendum risus.Nulla pellentesque sem eleifend lectus volutpat, sed imperdiet sem placerat. Ut varius tortor libero. Nunc ultrices urna sit amet tellus aliquet molestie. Phasellus ac risus tincidunt, ullamcorper magna ac, dictum mauris. In vestibulum, ex quis aliquam venenatis, neque nibh interdum erat, nec sagittis lectus magna at lacus. Etiam hendrerit justo sed mi interdum, at blandit diam sagittis. Praesent maximus mi felis, suscipit pulvinar tellus laoreet eget. Aenean pharetra massa a dignissim scelerisque. Fusce eget tortor lacus. Quisque quis neque eget lacus scelerisque pharetra. Donec dictum egestas est, sed consectetur felis sollicitudin et.Ut mi urna, facilisis non lacinia in, lobortis ut enim. Quisque nec pellentesque leo, eget ultrices urna. In id tellus felis. Praesent facilisis purus risus, vel ullamcorper mi posuere eu. Duis hendrerit sodales malesuada. Nullam felis ipsum, sagittis nec est ac, semper gravida ante. Praesent vitae viverra lorem. Vestibulum pellentesque, magna sed venenatis sagittis, tortor arcu ultricies diam, nec tincidunt risus mi ac neque. Sed ac condimentum est, ultricies vestibulum neque.Interdum et malesuada fames ac ante ipsum primis in faucibus. Proin tristique enim purus, ac feugiat dolor congue et. Ut non tempor eros. Nullam placerat laoreet orci, mattis hendrerit turpis imperdiet ullamcorper. Nam euismod lorem ligula, at blandit felis suscipit porttitor. Sed laoreet nunc blandit massa tincidunt commodo. Pellentesque in ligula risus.Maecenas iaculis bibendum commodo. Morbi suscipit mollis pellentesque. Donec porta odio eget eros dictum fringilla. Aliquam maximus porttitor dapibus. Nam posuere congue venenatis. Etiam euismod sit amet justo a egestas. Nulla tincidunt tincidunt sapien, in vestibulum neque sollicitudin id. Etiam euismod sit amet justo a egestas. Pellentesque pellentesque non augue vel blandit. Etiam quis risus vitae ligula elementum tempor. Suspendisse iaculis nisl non sapien interdum sagittis. Nam pellentesque volutpat odio ac venenatis. Etiam a iaculis mi. Ut nec porta libero, vel porta felis. Morbi in dolor at felis accumsan facilisis. Mauris porta dui nec elementum lacinia. Nulla facilisi.Nunc at finibus ante, ac varius odio. Phasellus fermentum egestas turpis a dictum. Vivamus sit amet erat nec sapien feugiat interdum ut eget urna. Mauris interdum nisi ut nisl eleifend fringilla.In hac habitasse platea dictumst. Sed imperdiet cursus augue in euismod. Donec facilisis tempor tortor, quis dapibus orci ornare at. Etiam fermentum massa in metus pretium commodo. Vestibulum vitae arcu ullamcorper, ultricies nibh id, efficitur nisi. Praesent id imperdiet augue, et venenatis lacus. Suspendisse consectetur augue nunc, eget sodales lectus volutpat quis. Ut congue auctor posuere. Nullam auctor malesuada justo, vitae congue turpis venenatis ut. Donec eget erat consequat, cursus erat ut, mollis urna. Suspendisse et tortor turpis. Pellentesque aliquet consectetur purus, vel cursus ipsum aliquam eu. Sed dictum lorem pulvinar lorem posuere, et efficitur nibh tristique. Proin semper sollicitudin eleifend. Fusce tempor nibh vitae elit efficitur pretium. Mauris pharetra lorem vel velit suscipit vestibulum. Cras pretium eget nisl at consectetur. Fusce vehicula maximus massa, vel euismod tortor laoreet sed. Sed tortor lorem, mollis quis urna at, ultrices feugiat neque. Phasellus et lectus in mi pellentesque varius. Fusce augue enim, rutrum in neque ac, tincidunt convallis enim. Quisque eget eros vitae metus iaculis convallis. Etiam tincidunt lacinia vehicula. Cras sed suscipit sem. Donec ut malesuada lectus, in facilisis odio. Vivamus id elementum felis. Pellentesque posuere, nisl eget dictum ultrices, risus lorem luctus eros, sit amet condimentum nibh nunc in risus. Sed in magna orci. In fringilla nibh metus, id rhoncus erat tincidunt ac. Donec ut malesuada lectus, in facilisis odio. Phasellus bibendum placerat ullamcorper.Aenean tincidunt est sed nisi pharetra finibus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Curabitur dictum vitae elit a pharetra. Vivamus varius semper erat, ultricies scelerisque sapien malesuada id. Donec ut lorem risus. Integer vitae neque odio. Donec tincidunt viverra massa, at suscipit arcu blandit interdum. Vivamus sit amet erat nec sapien feugiat interdum ut eget urna. Ut cursus mauris ut neque vestibulum porta sed semper nisl. Suspendisse nec tortor quis orci sagittis interdum vel quis magna.",
+      "file": "issues/Moltmann_2020._Truthmaker_semantics_for_natural_language.pdf"
+    }
+  },
+  {
+    "model": "gelv.subscription",
+    "pk": 1,
+    "fields": {
+      "price": 1.0,
+      "active": true,
+      "journal": 1,
+      "duration": 3
+    }
+  },
+  {
+    "model": "gelv.subscription",
+    "pk": 2,
+    "fields": {
+      "price": 2.0,
+      "active": true,
+      "journal": 1,
+      "duration": 6
+    }
+  },
+  {
+    "model": "gelv.subscription",
+    "pk": 3,
+    "fields": {
+      "price": 3.0,
+      "active": true,
+      "journal": 1,
+      "duration": 9
+    }
+  },
+  {
+    "model": "gelv.subscription",
+    "pk": 4,
+    "fields": {
+      "price": 4.0,
+      "active": true,
+      "journal": 1,
+      "duration": 12
+    }
+  },
+  {
+    "model": "gelv.subscription",
+    "pk": 5,
+    "fields": {
+      "price": 10.0,
+      "active": true,
+      "journal": 2,
+      "duration": 3
+    }
+  },
+  {
+    "model": "gelv.subscription",
+    "pk": 6,
+    "fields": {
+      "price": 15.0,
+      "active": true,
+      "journal": 2,
+      "duration": 6
+    }
+  },
+  {
+    "model": "gelv.subscription",
+    "pk": 7,
+    "fields": {
+      "price": 25.0,
+      "active": true,
+      "journal": 2,
+      "duration": 12
+    }
+  },
+  {
+    "model": "gelv.payment",
+    "pk": 1,
+    "fields": {
+      "user": 2,
+      "date": "2025-08-20",
+      "paid": false,
+      "name": "",
+      "phone": "",
+      "personal_code": "",
+      "city": "",
+      "address": "",
+      "postal_code": "",
+      "billing_email": ""
+    }
+  },
+  {
+    "model": "gelv.payment",
+    "pk": 2,
+    "fields": {
+      "user": 2,
+      "date": "2025-08-26",
+      "paid": false,
+      "name": "arkadijs saldovs",
+      "phone": "+37129474611",
+      "personal_code": "071202-21492",
+      "city": "",
+      "address": "",
+      "postal_code": "",
+      "billing_email": ""
+    }
+  },
+  {
+    "model": "gelv.payment",
+    "pk": 3,
+    "fields": {
+      "user": 1,
+      "date": "2025-08-26",
+      "paid": false,
+      "name": "Arkady Shaldov",
+      "phone": "+37129474611",
+      "personal_code": "071202-21492",
+      "city": "Riga",
+      "address": "Elijas iela 5-3",
+      "postal_code": "LV-1050",
+      "billing_email": ""
+    }
+  },
+  {
+    "model": "gelv.payment",
+    "pk": 4,
+    "fields": {
+      "user": 2,
+      "date": "2025-08-27",
+      "paid": false,
+      "name": "arkadijs saldovs",
+      "phone": "+37129474611",
+      "personal_code": "000000-00000",
+      "city": "riga",
+      "address": "test 1",
+      "postal_code": "lv-1000",
+      "billing_email": ""
+    }
+  },
+  {
+    "model": "gelv.payment",
+    "pk": 5,
+    "fields": {
+      "user": 4,
+      "date": "2025-08-27",
+      "paid": false,
+      "name": "arstarsta",
+      "phone": "22222222",
+      "personal_code": "222222-22222",
+      "city": "riga",
+      "address": "aaaa",
+      "postal_code": "lv-1000",
+      "billing_email": ""
+    }
+  },
+  {
+    "model": "gelv.issueorder",
+    "pk": 1,
+    "fields": {
+      "price": 0,
+      "payment": 1,
+      "product": 1
+    }
+  },
+  {
+    "model": "gelv.issueorder",
+    "pk": 2,
+    "fields": {
+      "price": 0,
+      "payment": 2,
+      "product": 2
+    }
+  },
+  {
+    "model": "gelv.issueorder",
+    "pk": 3,
+    "fields": {
+      "price": 0,
+      "payment": 3,
+      "product": 5
+    }
+  },
+  {
+    "model": "gelv.issueorder",
+    "pk": 4,
+    "fields": {
+      "price": 0,
+      "payment": 4,
+      "product": 3
+    }
+  },
+  {
+    "model": "gelv.issueorder",
+    "pk": 5,
+    "fields": {
+      "price": 0,
+      "payment": 5,
+      "product": 1
+    }
+  },
+  {
+    "model": "gelv.subscriptionorder",
+    "pk": 1,
+    "fields": {
+      "price": 1,
+      "payment": 1,
+      "product": 1,
+      "starts": 186
+    }
+  },
+  {
+    "model": "gelv.subscriptionorder",
+    "pk": 2,
+    "fields": {
+      "price": 1,
+      "payment": 5,
+      "product": 1,
+      "starts": 190
+    }
+  },
+  {
+    "model": "gelv.post",
+    "pk": 1,
+    "fields": {
+      "title": "Новый магазин GE.lv",
+      "description": "Sed in vulputate quam. Interdum et malesuada fames ac ante ipsum primis in faucibus. Integer tincidunt interdum nisi a congue. Curabitur varius sapien vel ex blandit posuere. In rutrum massa ut nisl pulvinar, hendrerit tincidunt velit blandit.",
+      "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed orci arcu, dapibus ac congue vitae, tincidunt sit amet neque. Ut fermentum lacus quis finibus aliquam. Nulla facilisi. Maecenas convallis iaculis hendrerit. Curabitur mauris diam, efficitur et sem sit amet, laoreet sagittis lorem. Maecenas suscipit neque sit amet tortor rutrum, ac facilisis ipsum sollicitudin. Suspendisse nec mauris vel urna pellentesque posuere non mattis justo.Mauris facilisis nisi id dui pharetra sagittis. Quisque nec lacus ultrices, mattis nulla nec, eleifend lorem.Nulla facilisi. Vestibulum ullamcorper vel est vel elementum. Curabitur varius sapien vel ex blandit posuere. Sed quis mauris eros. Mauris et ex nunc.Phasellus feugiat pretium laoreet. Aenean egestas at sem in tempor.Proin quis dolor quis lectus mattis eleifend. Aliquam tincidunt cursus tincidunt. Etiam eget feugiat nunc. Nam consequat tortor at ante vulputate molestie. Aliquam nunc ex, lobortis sit amet cursus et, tempus ac magna. Curabitur auctor, ante sed dictum sodales, turpis tellus malesuada neque, non elementum mi sem sit amet massa. Vivamus bibendum odio sed interdum fermentum. Nullam nec ligula volutpat, posuere ante non, iaculis est. Morbi sodales vestibulum fringilla. Etiam pharetra gravida ex vitae iaculis. Donec velit quam, aliquam et semper nec, sodales ac urna. Nam ex lorem, blandit sit amet rhoncus sed, varius id tellus. Suspendisse et tortor turpis. Nullam non eros fermentum, fringilla metus a, rutrum felis. Curabitur sagittis cursus pellentesque. Mauris quis justo a tellus commodo varius. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur mauris tortor, malesuada in rhoncus ut, aliquam ut dolor. Ut consectetur, purus consectetur ultricies pretium, elit ligula porta nibh, eu mattis nulla libero non sem. Ut sit amet odio vitae nunc venenatis tincidunt id eget ex. Vestibulum pulvinar convallis elit, semper commodo est vulputate a.Suspendisse aliquam dui eu faucibus cursus. Nunc eleifend ipsum eget odio elementum imperdiet ac et sem. Integer sit amet dolor eget diam dapibus porta. Cras eleifend vestibulum venenatis. Etiam sagittis, erat eget fringilla venenatis, dolor mi vestibulum nisl, sed feugiat est mauris at lacus. Ut semper odio nec risus convallis cursus. Vivamus vitae metus et magna scelerisque pulvinar in nec nisi. Nunc dictum mauris condimentum luctus cursus. Sed quis interdum massa.Aenean finibus dolor lectus, vel iaculis urna sagittis ac. In mollis justo sit amet odio laoreet, a porttitor eros tempus. Nunc eleifend ipsum eget odio elementum imperdiet ac et sem. Maecenas gravida dolor non eros pulvinar porttitor. Morbi et leo libero. Nam in lacinia nibh. Maecenas dignissim semper nisi, et accumsan tellus aliquam id. Pellentesque vitae ipsum mollis, rutrum elit et, sodales libero. Phasellus ornare dui in nisi eleifend porta.Nam dictum iaculis facilisis. Donec ut lorem risus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed id mattis velit.Phasellus ullamcorper commodo scelerisque. Aenean vitae massa congue, aliquam risus et, faucibus purus. Integer ex tortor, bibendum vel dictum quis, dignissim eu arcu. Suspendisse sit amet ipsum interdum, blandit augue et, condimentum dolor. Nam scelerisque finibus nunc eu lacinia. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aliquam ipsum turpis, laoreet sit amet ipsum ac, ullamcorper consequat felis.Vestibulum tincidunt quam in gravida porta. Etiam tempus gravida sem, a luctus odio bibendum non. In molestie viverra iaculis. Aliquam sollicitudin venenatis placerat. Sed quis ullamcorper eros. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aenean faucibus volutpat diam, quis elementum urna tincidunt at. Sed ut odio sed augue ultrices maximus. Suspendisse potenti. Nullam nec sagittis orci. Mauris pretium tellus in est sollicitudin cursus. Cras non finibus nisi, ac vulputate purus. Sed in vulputate quam. Donec a magna mi. Curabitur convallis a est sed consectetur. Maecenas sit amet orci vehicula, mollis nisl nec, mattis felis. Suspendisse iaculis nisl non sapien interdum sagittis. Ut consectetur, purus consectetur ultricies pretium, elit ligula porta nibh, eu mattis nulla libero non sem. In pretium at libero in tempor.Nunc odio eros, sollicitudin cursus eros at, finibus sollicitudin nisi. Cras efficitur est sed nunc tristique rhoncus. Interdum et malesuada fames ac ante ipsum primis in faucibus. Donec mollis, orci ac pellentesque consectetur, tellus libero vestibulum quam, quis venenatis tellus velit ut nibh. In molestie arcu cursus mollis consequat. Pellentesque sem augue, vulputate nec lacus ut, bibendum aliquet nulla. In dignissim tortor justo, eget efficitur ipsum commodo id. Vivamus finibus nisl ac metus pretium, nec suscipit dolor varius. Nullam at libero at lorem dignissim consequat. Nam nec enim gravida, ullamcorper elit nec, molestie nibh. Pellentesque vulputate, arcu id mattis interdum, ipsum risus auctor eros, eget viverra lacus ex vitae urna. In ut lectus at metus interdum bibendum. Nulla non consectetur odio. Donec volutpat vitae turpis et scelerisque. Aenean sapien leo, sodales id purus in, dictum euismod metus. Aliquam a erat ut leo volutpat tempor. Sed non semper est. Quisque imperdiet tellus risus, a suscipit tortor sagittis eu. Proin ac rutrum nunc, sollicitudin sagittis quam. Etiam placerat, dui sit amet placerat congue, ipsum metus placerat mi, commodo lacinia diam justo vel ex. Mauris hendrerit dui id tincidunt luctus. Sed ultricies aliquam leo, non consectetur lorem tincidunt nec. Aliquam erat volutpat. Aenean quis pharetra ex, at vehicula sapien.Mauris molestie feugiat porta.",
+      "date": "2025-08-20"
+    }
+  },
+  {
+    "model": "gelv.post",
+    "pk": 2,
+    "fields": {
+      "title": "Aliquam id urna scelerisque, euismod dolor vel, mollis nisl.",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sit amet efficitur odio, at convallis neque.",
+      "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sit amet efficitur odio, at convallis neque. Sed augue mauris, cursus a rhoncus eget, ullamcorper in ligula. Praesent non tellus luctus, bibendum sapien scelerisque, lobortis ipsum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nunc aliquam velit id nisl consectetur, et scelerisque diam suscipit.Curabitur interdum dictum sem in congue. Ut tempus, urna at pellentesque vulputate, orci massa condimentum dolor, sed vulputate odio ante pharetra tellus. Fusce eget tortor lacus. In hac habitasse platea dictumst. Donec velit quam, aliquam et semper nec, sodales ac urna.",
+      "date": "2025-08-20"
+    }
+  }
+]

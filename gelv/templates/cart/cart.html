@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load filters %}
 
 {% block title %}Cart{% endblock %}
 
@@ -8,23 +9,37 @@
             <!-- Cart Items -->
             <div class="cart-items">
                 <div class="cart-header">
-                    <h2>Subscriptions ({{ cart_subscriptions|length }})</h2>
+                    <h2>Subscriptions ({{ cart_subscriptions | length }})</h2>
                 </div>
 
-                {% for item in cart_subscriptions %}
+                {% for sub in cart_subscriptions %}
                 <div class="cart-item">
                     <div class="item-details">
                         <div class="item-name">
-                            {{ item }}
+                            {{ sub }}
                         </div>
                     </div>
 
-                    <div class="item-price">${{ item.price|floatformat:2 }}</div>
+                    {% if sub.product.discounted_price %}<div class="discount">{{ sub.product.formatted_discounted_price }}</div>{% endif %}
+                    <div class="product-price {% if sub.product.discounted_price %}crossed{% endif %}">{{ sub.product.formatted_price }}</div>
+
+                    <form method="post" action="{% url 'change_subscription_start' %}" class="start-change-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="type" value="subscription">
+                        <input type="hidden" name="id" value="{{ sub.product.id }}">
+                        <input type="hidden" name="metadata" value="{{ sub.metadata_json }}">
+                        <select class="start-change" name="new_start" onchange="this.form.submit()">
+                                {% for n in sub.product.journal.latest_number|len_range:12 %}
+                                    <option value="{{ n }}" {% if n == sub.metadata.start %}selected{% endif %}>{{ n|format_issue_number }}
+                                {% endfor %}
+                        </select>
+                    </form>
 
                     <form method="post" action="{% url 'remove_from_cart' %}" class="remove-form">
                         {% csrf_token %}
-                        <input type="hidden" name="product_kind" value="subscription">
-                        <input type="hidden" name="product_id" value="{{ item.id }}">
+                        <input type="hidden" name="type" value="subscription">
+                        <input type="hidden" name="id" value="{{ sub.product.id }}">
+                        <input type="hidden" name="metadata" value="{{ sub.metadata_json }}">
                         <button type="submit" class="remove-btn">Remove</button>
                     </form>
                 </div>
@@ -42,12 +57,14 @@
                         </div>
                     </div>
 
-                    <div class="item-price">${{ issue.price|floatformat:2 }}</div>
+                    {% if issue.product.discounted_price %}<div class="discount">{{ issue.product.formatted_discounted_price }}</div>{% endif %}
+                    <div class="product-price {% if issue.product.discounted_price %}crossed{% endif %}">{{ issue.product.formatted_price }}</div>
 
                     <form method="post" action="{% url 'remove_from_cart' %}" class="remove-form">
                         {% csrf_token %}
-                        <input type="hidden" name="product_kind" value="issue">
-                        <input type="hidden" name="product_id" value="{{ issue.id }}">
+                        <input type="hidden" name="type" value="issue">
+                        <input type="hidden" name="id" value="{{ issue.product.id }}">
+                        <input type="hidden" name="metadata" value="{{ issue.metadata_json }}">
                         <button type="submit" class="remove-btn">Remove</button>
                     </form>
                 </div>
@@ -70,25 +87,25 @@
                         <span>${{ total|floatformat:2 }}</span>
                     </div>
 
-                    <!-- Payment Methods -->
+                    <!-- payment methods -->
                     <form method="post" action="{% url 'checkout' %}" class="payment-section">
                         {% csrf_token %}
-                        <h4>Payment Method</h4>
                         
-                        {% for method in payment_methods %}
-                            <label for="payment-{{ method.id }}" class="payment-method">
-                                <input type="radio" name="payment_method" value="{{ method.id }}" 
-                                       id="payment-{{ method.id }}" {% if forloop.first %}checked{% endif %}>
-                                <div class="payment-content">
-                                    <div class="payment-method-name">{{ method.name }}</div>
-                                    <div class="payment-method-desc">{{ method.description }}</div>
-                                </div>
-                            </label>
-                        {% endfor %}
+                        <input type="hidden" name="payment_method" value="bank_transfer">
 
-                        <div {% if user.is_authenticated %}style="display: none;"{% endif %}>
-                            <h4>Email</h4>
-                            <input type="email" name="email" id="email" required value={{ user.email }}>
+                        <!-- personal details -->
+                        <div class="personal-details-form">
+                            <h4>Billing details</h4>
+                            <div class="form-field" {% if user.is_authenticated %}style="display: none;"{% endif %}>
+                                <label for="email">Email</label>
+                                <input type="email" name="email" id="email" required value={{ user.email }}>
+                            </div>
+                            {% for field in billing_fields %}
+                                <div class="form-field">
+                                    <label for="name">{{ field.name }}</label>
+                                    <input type="{{ field.type }}" name="{{ field.id }}" id="{{ field.id }}" autocomplete="{{ field.autocomplete }}" required value="{{ latest_payment|attr:field.id }}">
+                                </div>
+                            {% endfor %}
                         </div>
                         
                         <button type="submit" class="checkout-btn">

@@ -1,14 +1,44 @@
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.conf import settings
+from django.core.mail import EmailMessage
 from django.contrib import messages
 from django.shortcuts import redirect
-from django.http import JsonResponse, HttpRequest, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpRequest, HttpResponse
 from django.views.decorators.http import require_POST
 from django.db import transaction
-import json
+from gelv.invoice import Invoice
+from gelv.variables import site_url
+from gelv.utils import get_request_content, trace
+from gelv.views.cart import Cart, PAYMENT_METHODS, BILLING_DETAILS_FIELDS
+from gelv.models import Issue, Subscription, IssueOrder, SubscriptionOrder, User, Payment
 
-from ..utils import get_request_content
-from .cart import get_issues_and_subs, PAYMENT_METHODS
-from ..models import IssueOrder, SubscriptionOrder, User, Payment
+
+def send_invoice_mail(user: User, invoice: Invoice) -> bool:
+
+    site_name = getattr(settings, 'SITE_NAME', None)
+    context = {
+        'user': user,
+        'invoice': invoice,
+        'site_name': site_name,
+        'owned_url': site_url + reverse('owned')
+    }
+
+    try:
+        msg = EmailMessage(
+            to=(user.email,),
+            subject=f'Your {site_name} invoice {invoice.number}',
+            body=render_to_string('emails/invoice_email.txt', context),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+        )
+        msg.attach_file(invoice.filepath)
+        msg.send()
+
+        trace(user.email, f'invoice email for {invoice.number} (payment {invoice.payment.id}) sent to:')
+        return True
+    except Exception as e:
+        trace(e, f'send email for invoice {invoice.number} (payment {invoice.payment.id}) failed:')
+        return False
 
 
 @require_POST
@@ -19,12 +49,12 @@ def process_payment(request: HttpRequest) -> HttpResponse:
     data = get_request_content(request)
     payment_method = data.get('payment_method')
     email = data.get('email')
+    billing_details = {field['id']: data.get(field['id']) for field in BILLING_DETAILS_FIELDS}
 
-    cart = request.session.get('cart', [])
+    cart = Cart.from_session(request.session)
     if not cart:
         messages.error(request, 'Cart is empty')
         return redirect(request.META.get('HTTP_REFERER', 'catalogue'))
-    cart_issues, cart_subs = get_issues_and_subs(cart)
 
     # validate payment method
     valid_methods = [method['id'] for method in PAYMENT_METHODS]
@@ -53,7 +83,7 @@ def process_payment(request: HttpRequest) -> HttpResponse:
     # check if user already owns any of the issues
     existing_orders = IssueOrder.objects.filter(
         payment__user=user,
-        product__in=cart_issues,
+        product__in=[issue.product for issue in cart.issues],
     )
 
     if existing_orders.exists():
@@ -61,43 +91,32 @@ def process_payment(request: HttpRequest) -> HttpResponse:
         messages.error(request, f'You already own {", ".join(map(str, owned_issues))}')
         return redirect(request.META.get('HTTP_REFERER', 'cart'))
 
-    # process payment
-    # TODO: make it real
-    payment_success = True
-
-    if not payment_success:
-        messages.error(request, 'Payment failed')
-        return redirect(request.META.get('HTTP_REFERER', 'cart'))
-
     # create a single Payment and Orders for each product
-    payment = Payment.new(user=user)
-    for sub in cart_subs:
-        SubscriptionOrder.new(sub, payment=payment).id
-    for issue in cart_issues:
-        IssueOrder.new(issue, payment=payment).id
+    payment = Payment.objects.create(user=user, **billing_details)
+
+    # TODO: make it declarative in the Cart class
+    for sub in cart.subscriptions:
+        if isinstance(sub.product, Subscription):
+            SubscriptionOrder.objects.create(product=sub.product, payment=payment, price=sub.product.current_price, **sub.metadata)
+    for issue in cart.issues:
+        if isinstance(issue.product, Issue):
+            IssueOrder.objects.create(product=issue.product, payment=payment, price=issue.product.current_price, **issue.metadata)
+
+    # generate and send invoice
+    invoice = Invoice(payment)
+    invoice.generate()
+    success = send_invoice_mail(user, invoice)
+    if success:
+        messages.success(request, 'Order completed! Please check your inbox for an invoice.')
+    else:
+        messages.error(request, 'Order completed! But we couldn\'t send you an invoice. You can find it in the Account tab under "payments".')
+
+    # save billing details to the user
+    for attr, value in billing_details.items():
+        setattr(user, attr, value)
+    user.save()
 
     # clear cart from session
     request.session['cart'] = []
     request.session.modified = True
-
-    # TODO: send receipts
-
-    messages.success(request, 'Purchase completed successfully!')
-    return redirect('catalogue')
-
-
-# Webhook for payment confirmations (if needed)
-@csrf_exempt
-@require_POST
-def payment_webhook(request: HttpRequest) -> HttpResponse:
-    """Handle payment webhooks from payment providers"""
-    data = json.loads(request.body)
-
-    # TODO: Implement webhook signature verification
-    if data.get('type') == 'payment_intent.succeeded':
-        # Update order status based on payment reference
-        payment_reference = data.get('payment_reference')
-        # You'd need to add a payment_reference field to your Order model
-        # or use another way to match payments to orders
-
-    return JsonResponse({'status': 'success'})
+    return redirect('home')

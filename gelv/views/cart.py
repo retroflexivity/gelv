@@ -1,71 +1,45 @@
 from django.contrib import messages
-from django.db.models.query import QuerySet
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse, HttpRequest, HttpResponse
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.http import HttpRequest, HttpResponse
 from django.views.decorators.http import require_POST
-from ..utils import get_request_content, trace
-from ..models import Issue, Subscription
+from gelv.utils import get_request_content, trace
+from gelv.models import Issue, Subscription, Payment
+from gelv.cart import Cart, CartItem
 
 PAYMENT_METHODS = [
-    {'id': 'klix', 'name': 'Klix', 'description': 'Card, online bank, Google Pay, Apple Pay'},
-    {'id': 'bank_transfer', 'name': 'Bank transfer', 'description': 'Manual bank transfer'},
+    {'id': 'bank_transfer', 'name': 'bank transfer', 'description': 'manual bank transfer'},
+]
+
+BILLING_DETAILS_FIELDS = [
+    {'id': 'billing_email', 'name': 'email', 'type': 'email', 'autocomplete': 'email'},
+    {'id': 'name', 'name': 'name', 'type': 'text', 'autocomplete': 'name'},
+    {'id': 'phone', 'name': 'phone number', 'type': 'tel', 'autocomplete': 'tel'},
+    {'id': 'personal_code', 'name': 'personal code', 'type': 'text', 'autocomplete': ''},
+    {'id': 'city', 'name': 'city', 'type': 'text', 'autocomplete': 'address-level2'},
+    {'id': 'address', 'name': 'street address', 'type': 'text', 'autocomplete': 'address-line1'},
+    {'id': 'postal_code', 'name': 'postal code', 'type': 'text', 'autocomplete': 'postal-code'},
 ]
 
 
-def get_cart_count(request: HttpRequest) -> HttpResponse:
-    """Get total number of items in cart"""
-    cart = request.session.get('cart', [])
-    return JsonResponse({'cart_count': len(cart)})
-
-
-def get_item_from_request(request: HttpRequest) -> tuple[str, int]:
-    """Get item kind and id from a cart modification request"""
-    data = get_request_content(request)
-
-    kind = data.get('product_kind', 'none')
-    id = int(data.get('product_id', 0))
-    return kind, id
-
-
-def get_issue_and_sub_ids(cart: list) -> tuple[list[int], list[int]]:
-    issue_ids = [id for kind, id in cart if kind == 'issue']
-    sub_ids = [id for kind, id in cart if kind == 'subscription']
-    return issue_ids, sub_ids
-
-
-def get_issues_and_subs(cart: list) -> tuple[QuerySet[Issue], QuerySet[Subscription]]:
-    """Get issues and subscriptions from cart as two lists."""
-    issue_ids, sub_ids = get_issue_and_sub_ids(cart)
-    return Issue.get_objects(ids=issue_ids), Subscription.get_objects(ids=sub_ids)
-
-
+@login_required
 def cart_view(request: HttpRequest) -> HttpResponse:
     """Display cart items from session and payment method selection"""
     # get cart from session
-    cart = request.session.get('cart', [])
-    issues, subs = get_issues_and_subs(cart)
-
-    total = sum(issue.price for issue in issues) + sum(sub.price for sub in subs)
+    cart = Cart.from_session(request.session)
 
     context = {
         'user': request.user,
-        'cart_issues': list(issues),
-        'cart_subscriptions': list(subs),
-        'total': total,
-        'payment_methods': PAYMENT_METHODS
+        'latest_payment': Payment.get_latest(request.user),
+        'cart_subscriptions': cart.filter_by_type(Subscription),
+        'cart_issues': cart.filter_by_type(Issue),
+        'total': cart.total_price,
+        'payment_methods': PAYMENT_METHODS,
+        'billing_fields': BILLING_DETAILS_FIELDS,
     }
 
+    trace(cart, 'cart')
     return render(request, 'cart/cart.html', context)
-
-
-def verify_and_get_item_name(kind: str, id: int) -> str:
-    """Verify an item exists and get its name"""
-    if kind == 'issue':
-        return str(get_object_or_404(Issue, id=id))
-    elif kind == 'subscription':
-        return str(get_object_or_404(Subscription, id=id))
-    else:
-        raise TypeError(f'Unsupported product kind {kind}')
 
 
 def clear_cart(request: HttpRequest) -> HttpResponse:
@@ -79,38 +53,53 @@ def clear_cart(request: HttpRequest) -> HttpResponse:
 @require_POST
 def add_to_cart(request: HttpRequest) -> HttpResponse:
     """Add item to cart"""
-    kind, id = get_item_from_request(request)
-    name = verify_and_get_item_name(kind, id)
+    cart = Cart.from_session(request.session)
+    item = CartItem.from_singleton_request(request)
+    success = cart.add(item)
 
-    # add if not already in cart
-    cart = request.session.get('cart', [])
-    if [kind, id] not in cart:
-        print(f"adding {kind} {id} to cart")
-        cart.append((kind, id))
-        request.session['cart'] = cart
+    if success:
+        request.session['cart'] = cart.raw
         request.session.modified = True
-        messages.success(request, f'{name} added to cart')
+        messages.success(request, f'{item.product} added to cart')
     else:
-        messages.info(request, f'{name} is already in cart')
+        messages.info(request, f'{item.product} is already in cart')
 
+    trace(f"cart is now {cart}")
     return redirect(request.META.get('HTTP_REFERER', 'catalogue'))
 
 
 @require_POST
 def remove_from_cart(request: HttpRequest) -> HttpResponse:
     """Remove item from cart"""
-    kind, id = get_item_from_request(request)
-    name = verify_and_get_item_name(kind, id)
+    cart = Cart.from_session(request.session)
+    item = CartItem.from_singleton_request(request)
+    success = cart.remove(item)
 
-    # remove if in cart
-    cart = request.session.get('cart', [])
-    if [kind, id] in cart:
-        cart.remove([kind, id])
-        request.session['cart'] = cart
+    if success:
+        request.session['cart'] = cart.raw
         request.session.modified = True
-        messages.success(request, f'{name} removed from cart')
+        messages.success(request, f'{item.product} removed from cart')
 
     else:
-        messages.info(request, f'{name} is not in cart')
+        messages.info(request, f'{item.product} is not in cart')
+
+    trace(f"cart is now {cart}")
+    return redirect(request.META.get('HTTP_REFERER', 'catalogue'))
+
+
+@require_POST
+def change_subscription_start(request: HttpRequest) -> HttpResponse:
+    """Change metadata['start'] of a subscription"""
+    cart = Cart.from_session(request.session)
+    item = CartItem.from_singleton_request(request)
+    success = cart.edit_meta(item, start=int(get_request_content(request).get('new_start', 0)))
+
+    if success:
+        request.session['cart'] = cart.raw
+        request.session.modified = True
+    else:
+        messages.info(request, 'Something went wrong.')
+
+    trace(f"cart is now {cart}")
 
     return redirect(request.META.get('HTTP_REFERER', 'catalogue'))

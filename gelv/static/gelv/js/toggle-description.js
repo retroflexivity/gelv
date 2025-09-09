@@ -1,5 +1,5 @@
 function toggleDescription(headerElement) {
-    const productItem = headerElement.closest('.product-item');
+    const parent = headerElement.closest('.has-description');
 
     // MIGHTNEED: close all other expanded items
     // document.querySelectorAll('.product-item.expanded').forEach(item => {
@@ -8,6 +8,6 @@ function toggleDescription(headerElement) {
     //     }
     // });
 
-    productItem.classList.toggle('expanded');
+    parent.classList.toggle('expanded');
 }
 

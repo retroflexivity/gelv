@@ -1,13 +1,13 @@
 @charset "UTF-8";
 mixin cart-card {
   background: #fff;
-  border: 1px solid #ddd;
+  border: 1px solid #666;
   border-radius: 8px;
   padding: 0;
 }
 
 * {
-  font-family: Open Sans, sans-serif;
+  font-family: Libertinus Sans, sans-serif;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -19,7 +19,7 @@ mixin cart-card {
 
 body {
   line-height: 1.6;
-  background-color: #f7f7f7;
+  background-color: #eee;
 }
 
 main {
@@ -36,7 +36,7 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #fff;
+  background-color: #e0e0e0;
   padding: 15px 50px;
   margin-bottom: 20px;
 }
@@ -54,11 +54,11 @@ h1 {
   margin: 0;
   font-size: 24px;
   font-weight: 600;
-  color: #007bff;
+  color: #000;
 }
 
 .header-brand .brand-link:hover h2 {
-  color: #0056b3;
+  color: #333;
 }
 
 .header-nav {
@@ -90,13 +90,13 @@ h1 {
 }
 
 .header-nav .nav-link:hover {
-  color: #007bff;
-  background-color: #f7f7f7;
+  color: #000;
+  background-color: #eee;
 }
 
 .header-nav .nav-link.active {
-  color: #007bff;
-  background-color: #e7f1ff;
+  color: #000;
+  background-color: #d0d0d0;
 }
 
 .header-cart {
@@ -110,17 +110,17 @@ h1 {
   text-decoration: none;
   color: #333;
   padding: 8px 16px;
-  border: 1px solid #ddd;
+  border: 1px solid #666;
   border-radius: 4px;
-  background-color: #f7f7f7;
+  background-color: #eee;
   transition: all 0.3s ease;
   position: relative;
 }
 
 .header-cart .cart-link:hover {
-  background-color: #007bff;
+  background-color: #000;
   color: white;
-  border-color: #007bff;
+  border-color: #000;
 }
 
 .header-cart .cart-link .cart-icon {
@@ -167,16 +167,18 @@ h1 {
   flex: 0 0 100px;
 }
 
-select, input[type="text"], button {
+select,
+input[type="text"],
+button {
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid #666;
   border-radius: 4px;
   font-size: 14px;
   width: 100%;
 }
 
 button {
-  background-color: #007bff;
+  background-color: #000;
   color: #fff;
   border: none;
   cursor: pointer;
@@ -184,7 +186,7 @@ button {
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: #333;
 }
 
 .results-info {
@@ -222,11 +224,9 @@ button:hover {
 }
 
 .product-item {
-  padding: 20px 0;
-}
-
-.product-item:last-child {
-  border-bottom: none;
+  padding: 1em;
+  border: solid 2px #666;
+  margin: 2em auto;
 }
 
 .product-header {
@@ -247,23 +247,22 @@ button:hover {
 }
 
 .product-name a:hover {
-  color: #007bff;
+  color: #000;
 }
 
 .product-description {
   color: #666;
   font-size: 14px;
-  margin-bottom: 8px;
   line-height: 1.5;
   max-height: 0;
   overflow: hidden;
   padding: 0px;
-  transition: max-height 0.1s ease, padding 0.1s ease;
+  /* transition: max-height 0.1s ease; */
 }
 
 .product-item.expanded .product-description {
-  max-height: auto;
-  padding: 20px 0px;
+  max-height: 100000em;
+  /* padding: 5px 0px; */
 }
 
 .product-meta {
@@ -275,7 +274,11 @@ button:hover {
 .product-price {
   font-size: 20px;
   font-weight: 700;
-  color: #007bff;
+  color: #000;
+}
+
+.crossed {
+  text-decoration: line-through;
 }
 
 .product-status {
@@ -291,8 +294,8 @@ button:hover {
 }
 
 .status-badge.badge-owned {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: #5e8555;
+  color: #fff;
 }
 
 .status-badge.badge-cart {
@@ -301,13 +304,18 @@ button:hover {
 }
 
 .status-badge.button-add {
-  background-color: #007bff;
+  background-color: #000;
   color: #fff;
 }
 
 .status-badge.button-remove {
-  background-color: #cc390c;
+  background-color: #a35555;
   color: #fff;
+}
+
+.button-add {
+  display: flex;
+  justify-content: center;
 }
 
 .pagination {
@@ -317,22 +325,23 @@ button:hover {
   margin-top: 30px;
 }
 
-.pagination a, .pagination span {
+.pagination a,
+.pagination span {
   padding: 10px 15px;
   text-decoration: none;
-  border: 1px solid #ddd;
+  border: 1px solid #666;
   color: #333;
   border-radius: 4px;
 }
 
 .pagination a:hover {
-  background-color: #f7f7f7;
+  background-color: #eee;
 }
 
 .pagination .current {
-  background-color: #007bff;
+  background-color: #000;
   color: white;
-  border-color: #007bff;
+  border-color: #000;
 }
 
 .no-products {
@@ -373,7 +382,7 @@ button:hover {
 .back-link {
   display: flex;
   align-items: center;
-  color: #007bff;
+  color: #000;
   text-decoration: none;
   margin-bottom: 20px;
   font-weight: 500;
@@ -381,7 +390,7 @@ button:hover {
 }
 
 .back-link:hover {
-  color: #0056b3;
+  color: #333;
 }
 
 .back-link::before {
@@ -399,7 +408,7 @@ button:hover {
 
 .cart-items {
   background: #fff;
-  border: 1px solid #ddd;
+  border: 1px solid #666;
   border-radius: 8px;
   padding: 0;
 }
@@ -433,7 +442,7 @@ button:hover {
 .item-icon {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #007bff, #0056b3);
+  background: linear-gradient(135deg, #000, #333);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -460,7 +469,7 @@ button:hover {
 }
 
 .item-name a:hover {
-  color: #007bff;
+  color: #000;
 }
 
 .item-description {
@@ -472,7 +481,7 @@ button:hover {
 .item-price {
   font-size: 20px;
   font-weight: 700;
-  color: #007bff;
+  color: #000;
   margin-right: 15px;
 }
 
@@ -480,30 +489,9 @@ button:hover {
   display: inline;
 }
 
-.remove-btn {
-  background: #dc3545;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.2s;
-}
-
-.remove-btn:hover:not(:disabled) {
-  background: #c82333;
-}
-
-.remove-btn:disabled {
-  background: #6c757d;
-  cursor: not-allowed;
-}
-
 .order-summary {
   background: #fff;
-  border: 1px solid #ddd;
+  border: 1px solid #666;
   border-radius: 8px;
   padding: 0;
   height: fit-content;
@@ -536,7 +524,7 @@ button:hover {
 }
 
 .summary-total {
-  border-top: 2px solid #007bff;
+  border-top: 2px solid #000;
   margin-top: 15px;
   padding-top: 15px;
   font-size: 18px;
@@ -567,12 +555,12 @@ button:hover {
 }
 
 .payment-method:hover {
-  border-color: #007bff;
-  background-color: #ffffff;
+  border-color: #000;
+  background-color: #eee;
 }
 
 .payment-method.selected {
-  border-color: #007bff;
+  border-color: #000;
   background-color: #e7f3ff;
 }
 
@@ -649,7 +637,7 @@ button:hover {
   text-align: center;
   padding: 60px 20px;
   background: #fff;
-  border: 1px solid #ddd;
+  border: 1px solid #666;
   border-radius: 8px;
   padding: 0;
   grid-column: 1 / -1;
@@ -667,7 +655,7 @@ button:hover {
 }
 
 .continue-shopping {
-  background: #007bff;
+  background: #000;
   color: #fff;
   border: none;
   padding: 8px 16px;
@@ -683,7 +671,7 @@ button:hover {
 }
 
 .continue-shopping:hover:not(:disabled) {
-  background: #0056b3;
+  background: #333;
 }
 
 .continue-shopping:disabled {
@@ -748,12 +736,16 @@ button:hover {
 }
 
 .error-messages {
-  margin-bottom: 20px;
+  position: fixed;
+  bottom: 0.5em;
+  width: 90%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .error-messages .error {
-  background-color: #dc3545;
-  color: #721c24;
+  background-color: #a35555;
+  color: #fff;
   padding: 10px;
   border-radius: 4px;
   font-size: 14px;
@@ -777,7 +769,7 @@ button:hover {
 .form-group input[type="password"],
 .form-group input[type="text"] {
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid #666;
   border-radius: 4px;
   font-size: 14px;
   width: 100%;
@@ -790,7 +782,7 @@ button:hover {
 .form-group input[type="password"]:focus,
 .form-group input[type="text"]:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: #000;
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
@@ -806,11 +798,11 @@ button:hover {
 
 .form-actions button {
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid #666;
   border-radius: 4px;
   font-size: 14px;
   width: 100%;
-  background-color: #007bff;
+  background-color: #000;
   color: #fff;
   border: none;
   cursor: pointer;
@@ -819,7 +811,7 @@ button:hover {
 }
 
 .form-actions button:hover {
-  background-color: #0056b3;
+  background-color: #333;
 }
 
 .form-actions button:disabled {
@@ -835,13 +827,46 @@ button:hover {
 }
 
 .form-footer a {
-  color: #007bff;
+  color: #000;
   text-decoration: none;
   font-size: 14px;
 }
 
 .form-footer a:hover {
   text-decoration: underline;
+}
+
+.post {
+  padding: 1em;
+  border: solid 2px #666;
+  margin: 2em auto;
+  background-color: #eee;
+}
+
+.post .header {
+  display: flex;
+}
+
+.post .header h3 {
+  color: #333;
+  font-size: 1.3em;
+}
+
+.post .header .date {
+  margin-left: auto;
+  color: #666;
+}
+
+.subscription-options {
+  display: flex;
+  justify-content: center;
+  gap: 2em;
+}
+
+.subscription-options .option {
+  flex: 1;
+  max-width: 10em;
+  text-align: center;
 }
 
 @media (max-width: 768px) {

@@ -1,13 +1,10 @@
 # todo
 - user settings
-- payment properties
-- news
 - sidebar
 - discounts
-- subscription start time
-- password confirm
-- password reset
 - payment
+
+- admin field search
 
 
 # Проект сайта.
@@ -68,3 +65,4 @@
 
 - оставляем только журналы
 
+- счета обрабатываются вручную

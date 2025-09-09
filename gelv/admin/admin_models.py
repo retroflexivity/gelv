@@ -7,12 +7,13 @@ from gelv.admin.admin_site import admin_site
 
 
 class IssueAdmin(admin.ModelAdmin):
-    list_display = ('journal', 'number', 'month_year', 'price', 'description', 'active')
+    list_display = ('journal', 'number_year', 'price', 'discounted_price', 'active')
     list_filter = ('active', 'journal', 'price')
-    fields = ('journal', 'number', 'price', 'description', 'active')
+    fields = ('journal', 'number', 'price', 'discounted_price', 'description', 'file', 'active')
 
-    def month_year(self, obj):
-        return obj.date.strftime('%b %Y')
+    @admin.display(ordering='number', description='number')
+    def number_year(self, obj):
+        return obj.number_year
 
     def get_urls(self):
         urls = super().get_urls()
@@ -39,14 +40,18 @@ class IssueAdmin(admin.ModelAdmin):
 
 
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ('journal', 'duration', 'price', 'active')
+    list_display = ('journal', 'duration', 'price', 'discounted_price', 'active')
     list_filter = ('active', 'journal', 'duration')
-    fields = ('journal', 'duration', 'price', 'active')
+    fields = ('journal', 'duration', 'price', 'discounted_price', 'active')
 
 
 class JournalAdmin(admin.ModelAdmin):
-    list_display = ('name', 'anno')
+    list_display = ('name', 'frequency')
 
 
 class PostAdmin(admin.ModelAdmin):
     list_display = ('title', 'date')
+
+
+class SubscriptionOrderAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'start', 'end')

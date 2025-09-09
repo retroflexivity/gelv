@@ -1,19 +1,15 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.db.models import Sum
 from django.db.models.query import QuerySet
 from typing import TypeVar, cast, Optional
-import datetime
-from dateutil.relativedelta import relativedelta
-from gelv.utils import diff_month, add_month, trace, current_month_year
+from gelv.utils import trace, IssueNumber
+from django.shortcuts import get_object_or_404
 from django.db.models.manager import Manager
 
 P = TypeVar('P', bound='AbstractProduct')
 
-
-def default_prices() -> dict[int, float]:
-    return {3: 0.0, 6: 0.0, 9: 0.0, 12: 0.0}
+IssueNumberField = models.IntegerField  # starting from 01/2010
 
 
 class UserManager(BaseUserManager):
@@ -63,8 +59,9 @@ class User(AbstractUser):
 
     def get_owned_issues(self) -> QuerySet['Issue']:
         """Get all issues a user owns, including from subscriptions."""
-        issues = Issue.get_objects(all=True).filter(issueorder__payment__user_id=self.id)
-        sub_orders = SubscriptionOrder.objects.filter(payment__user__id=self.id)
+        issue_orders = IssueOrder.objects.filter(payment__user__id=self.id, payment__paid=True)
+        issues = Issue.get_objects(all=True).filter(issueorder__in=issue_orders).distinct()
+        sub_orders = SubscriptionOrder.objects.filter(payment__user__id=self.id, payment__paid=True)
         return issues.union(*map(lambda x: x.get_issues(), sub_orders))
 
     @staticmethod
@@ -79,11 +76,18 @@ class Journal(models.Model):
     objects: Manager['Journal']
 
     name = models.CharField(max_length=200)
-    anno = models.DateField(default=datetime.date(year=2010, month=1, day=1))
+    # anno = models.DateField(default=datetime.date(year=2010, month=1, day=1))
     description = models.TextField(default='', blank=True, null=True)
+    frequency = models.IntegerField(default=12)
 
-    def get_issue_number_from_date(self, date: datetime.datetime) -> int:
-        return diff_month(date, self.anno) + 1  # issues are 1-base numbered
+    # def get_issue_number_from_date(self, date: datetime.datetime) -> int:
+    #     return diff_month(date, self.anno) + 1  # issues are 1-base numbered
+
+    @property
+    def latest_number(self, all=False) -> int:
+        return Issue.objects.filter(journal=self.id).aggregate(
+            models.Max('number', output_field=models.IntegerField(), default=0)
+        )['number__max']
 
     def get_subscriptions(self, all=False) -> QuerySet['Subscription', 'Subscription']:
         return Subscription.get_objects(all=all).filter(journal=self.id)
@@ -93,7 +97,7 @@ class Journal(models.Model):
 
 
 class AbstractProduct(models.Model):
-    """
+    """ Showing 1-7 of 7 items.
     Anything purchasable.
     """
     objects: Manager['AbstractProduct']
@@ -101,13 +105,30 @@ class AbstractProduct(models.Model):
     id = models.AutoField(primary_key=True)
 
     price = models.FloatField(default=0.0)
+    discounted_price = models.FloatField(null=True, blank=True)
     active = models.BooleanField(default=True)
+
+    @property
+    def current_price(self):
+        return self.discounted_price if self.discounted_price else self.price
+
+    @property
+    def formatted_price(self):
+        return f'{self.price:.2f} €'
+
+    @property
+    def formatted_discounted_price(self):
+        return f'{self.discounted_price:.2f} €'
 
     @classmethod
     def get_objects(cls: type[P], ids: Optional[list[int]] = None, all=False) -> QuerySet['P']:
-        id_filter = {'id__in': ids} if ids else {}
+        id_filter = {'id__in': ids} if (ids is not None) else {}
         active_filter = {} if all else {'active': True}
         return cast('QuerySet[P]', cls.objects.filter(**id_filter).filter(**active_filter))
+
+    @classmethod
+    def get_object_or_404(cls: type[P], **kwargs) -> P:
+        return get_object_or_404(cls, **kwargs)
 
     class Meta:
         abstract = True
@@ -120,16 +141,16 @@ class Issue(AbstractProduct):
     objects: Manager['Issue']
 
     journal = models.ForeignKey(Journal, on_delete=models.CASCADE)
-    number = models.IntegerField()
+    number = IssueNumberField()
     description = models.TextField(default='', blank=True, null=True)
+    file = models.FileField(upload_to='issues')
 
     @property
-    def date(self):
-        return add_month(self.journal.anno, self.number)
+    def number_year(self):
+        return IssueNumber(self.number, self.journal.frequency)
 
     def __str__(self):
-        date = self.journal.anno + relativedelta(months=self.number - 1)
-        return f'{self.journal.name} {date.month}/{date.year}'
+        return f'{self.journal.name} {str(self.number_year)}'
 
 
 class Subscription(AbstractProduct):
@@ -144,10 +165,9 @@ class Subscription(AbstractProduct):
     def __str__(self):
         return f'{self.journal.name} \u2014 {self.duration}'
 
-    def get_issues(self, start) -> QuerySet[Issue]:
+    def get_issues(self, start: int) -> QuerySet[Issue]:
         """Get existing issues included in the subscription from a specific date"""
-        start_number = self.journal.get_issue_number_from_date(start)
-        numbers = range(start_number, start_number + self.duration)
+        numbers = range(start, start + self.duration)
         return Issue.get_objects(all=True).filter(journal=self.journal, number__in=numbers)
 
 
@@ -161,18 +181,51 @@ class Payment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField(default=timezone.now)
 
-    def get_total_price(self):
-        issue_total = IssueOrder.filter(payment=self).aggregate(Sum("price"))
-        sub_total = SubscriptionOrder.filter(payment=self).aggregate(Sum("price"))
+    paid = models.BooleanField(default=False)
+    invoice = models.FileField(upload_to='invoices', null=True)
+
+    # billing details
+    name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=20)
+    personal_code = models.CharField(max_length=15)
+    city = models.CharField(max_length=50)
+    address = models.CharField(max_length=100)
+    postal_code = models.CharField(max_length=10)
+    billing_email = models.EmailField()
+
+    def _generate_invoice(self):
+        from gelv.invoice import Invoice
+
+        invoice = Invoice(self)
+        invoice.generate()
+        self.invoice = invoice.filepath
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if not self.invoice:
+            self._generate_invoice()
+            self.save(update_fields=['invoice'])
+
+    @property
+    def total_price(self):
+        issue_total = IssueOrder.objects.filter(payment=self).aggregate(models.Sum('price', default=0))['price__sum']
+        sub_total = SubscriptionOrder.objects.filter(payment=self).aggregate(models.Sum('price', default=0))['price__sum']
         return issue_total + sub_total
 
+    def __str__(self):
+        return f'{self.user} @ {self.date}'
+
     @classmethod
-    def new(cls, user: User) -> 'Payment':
-        payment = cls(
-            user=user
-        )
-        payment.save()
-        return payment
+    def get_latest(cls, user) -> 'Payment':
+        """Get latest payment made by a user, if authenticated (for billing details)"""
+        try:
+            latest = cls.objects.filter(user=user.id).latest('date')
+            if not latest.billing_email:
+                latest.billing_email = user.email
+            return latest
+        except (cls.DoesNotExist, AttributeError):
+            return cls()
 
 
 class AbstractOrder(models.Model):
@@ -183,22 +236,19 @@ class AbstractOrder(models.Model):
     id = models.AutoField(primary_key=True)
 
     product = models.ForeignKey(AbstractProduct, on_delete=models.CASCADE)
-    price = models.IntegerField()
+    price = models.FloatField()
     payment = models.ForeignKey(Payment, on_delete=models.CASCADE)
+
+    @property
+    def invoice_entry(self) -> str:
+        return str(self.product)
+
+    def __str__(self):
+        return f'{self.payment.user}: {self.product}'
 
     @classmethod
     def get_by_user_sorted(cls, user_id: int) -> QuerySet['AbstractOrder']:
         return cls.objects.filter(payment__user=user_id).order_by('-date')
-
-    @classmethod
-    def new(cls, product: AbstractProduct, payment: Payment) -> 'AbstractOrder':
-        order = cls(
-            product=product,
-            price=product.price,
-            payment=payment
-        )
-        order.save()
-        return order
 
     class Meta:
         abstract = True
@@ -209,6 +259,7 @@ class IssueOrder(AbstractOrder):
     Purchase of a single issue. A user owns any issue
     he has an order with status == True for.
     """
+    objects: models.Manager['IssueOrder']
     product = models.ForeignKey(Issue, on_delete=models.CASCADE)
 
 
@@ -217,12 +268,20 @@ class SubscriptionOrder(AbstractOrder):
     Purchace of a subscription. A user owns any issue
     that is in range of any of his subscriptions.
     """
+    objects: models.Manager['SubscriptionOrder']
     product = models.ForeignKey(Subscription, on_delete=models.CASCADE)
-    starts = models.DateField(default=current_month_year)
+    start = IssueNumberField()
+
+    def invoice_entry(self):
+        return f'{self.product} mēnesi (no {self.start} līdz {self.end})'
+
+    @property
+    def end(self):
+        return self.start + self.product.duration
 
     def get_issues(self) -> QuerySet[Issue]:
         """Get existing issues included in the subscription order."""
-        return self.product.get_issues(self.starts)
+        return self.product.get_issues(self.start)
 
 
 class Post(models.Model):
@@ -232,8 +291,12 @@ class Post(models.Model):
     objects: Manager['Post']
 
     title = models.TextField()
+    description = models.TextField()
     text = models.TextField()
     date = models.DateField(default=timezone.now)
 
     def __str__(self):
         return self.title
+
+
+product_types: dict[str, type[Issue | Subscription]] = {'issue': Issue, 'subscription': Subscription}
