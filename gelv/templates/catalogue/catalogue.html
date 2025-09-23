@@ -10,19 +10,19 @@
 
     <!-- Products List -->
     {% if products %}
-        <div class="products-list">
+        <div class="products">
             {% for product in products %}
-                <div class="product-item has-description">
-                    <div class="product-header" onclick="toggleDescription(this)">
-                        <div class="product-info">
-                            <div class="product-name">{{ product }}</div>
+                <div class="item has-description">
+                    <div class="header" onclick="toggleDescription(this)">
+                        <div class="info">
+                            <div class="name">{{ product }}</div>
                         </div>
                         
-                        <div class="product-meta">
+                        <div class="meta">
                             {% if product.discounted_price %}<div class="discount">{{ product.formatted_discounted_price }}</div>{% endif %}
-                            <div class="product-price {% if product.discounted_price %}crossed{% endif %}">{{ product.formatted_price }}</div>
+                            <div class="price {% if product.discounted_price %}crossed{% endif %}">{{ product.formatted_price }}</div>
                         
-                            <div class="product-status" onclick="event.stopPropagation()">
+                            <div class="status" onclick="event.stopPropagation()">
                                 {% if product.id in owned_product_ids %}
                                     <span class="status-badge badge-owned">Owned</span>
                                 {% elif product.id in cart_items %}
@@ -43,7 +43,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="product-description">
+                    <div class="description">
                         {{ product.description|linebreaks }}
                     </div>
                 </div>
@@ -82,30 +82,5 @@
             <p>Try adjusting your search criteria or browse all journals.</p>
         </div>
     {% endif %}
-    <script>
-        // hide content until scroll is restored
-        document.documentElement.classList.add('scroll-restoring');
-
-        const stayForms = document.querySelectorAll('form[action*="/cart/"], form[class="sort-dropdown"]');
-        stayForms.forEach(form => {
-            function saveScroll() {
-                sessionStorage.setItem('scrollPosition', window.pageYOffset);
-            }
-            form.addEventListener('submit', saveScroll);
-            form.addEventListener('change', saveScroll);
-        });
-
-        // restore scroll position as early as possible
-        document.addEventListener('DOMContentLoaded', function() {
-            const scrollPosition = sessionStorage.getItem('scrollPosition');
-            if (scrollPosition) {
-                window.scrollTo(0, parseInt(scrollPosition));
-                sessionStorage.removeItem('scrollPosition');
-            }
-    
-            document.documentElement.classList.remove('scroll-restoring');
-        });
-
-    </script>
     <script src="{% static 'gelv/js/toggle-description.js' %}"></script>
 {% endblock %}

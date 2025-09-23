@@ -80,15 +80,14 @@ def process_payment(request: HttpRequest) -> HttpResponse:
         messages.error(request, 'Email is required')
         return redirect(request.META.get('HTTP_REFERER', 'cart'))
 
+    trace(type(cart.issues))
     # check if user already owns any of the issues
-    existing_orders = IssueOrder.objects.filter(
-        payment__user=user,
-        product__in=[issue.product for issue in cart.issues],
+    owned = user.get_owned_issues().filter(
+        pk__in=[issue.product.id for issue in cart.issues],
     )
 
-    if existing_orders.exists():
-        owned_issues = [order.product for order in existing_orders]
-        messages.error(request, f'You already own {", ".join(map(str, owned_issues))}')
+    if owned.exists():
+        messages.error(request, f'You already own {", ".join(map(str, owned))}.')
         return redirect(request.META.get('HTTP_REFERER', 'cart'))
 
     # create a single Payment and Orders for each product

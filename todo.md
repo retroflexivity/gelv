@@ -1,9 +1,6 @@
 # todo
 - user settings
-- sidebar
-- discounts
-- payment
-
+- notify user when payment confirmed
 - admin field search
 
 

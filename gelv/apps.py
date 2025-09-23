@@ -7,4 +7,4 @@ class GelvConfig(AppConfig):
 
     def ready(self):
         import gelv.admin.admin_models  # noqa
-
+        import gelv.signals  # noqa

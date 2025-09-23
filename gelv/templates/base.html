@@ -3,34 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load ads %}
     {% load static %}
     <link rel="stylesheet" href="{% static 'gelv/css/gelv.css' %}">
     <title>{% block title %}{% endblock %}</title>
 </head>
 <body>
     <header class="main-header">
-        <!-- Logo/Brand -->
-        <div class="header-brand">
+        <!-- Logo -->
+        <div class="logo">
             <a href="{% url 'home' %}" class="brand-link">
                 <h2>B&E</h2>
             </a>
         </div>
 
         <!-- Navigation -->
-        <nav class="header-nav">
-            <ul class="nav-list">
-                <li class="nav-item">
-                    <a href="{% url 'subscribe' %}" class="nav-link {% if request.resolver_match.url_name == 'subscribe' %}active{% endif %}">
+        <nav class="nav">
+            <ul>
+                <li>
+                    <a href="{% url 'subscribe' %}" class="{% if request.resolver_match.url_name == 'subscribe' %}active{% endif %}">
                         Subscribe
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="{% url 'catalogue' %}" class="nav-link {% if request.resolver_match.url_name == 'catalogue' %}active{% endif %}">
+                <li>
+                    <a href="{% url 'catalogue' %}" class="{% if request.resolver_match.url_name == 'catalogue' %}active{% endif %}">
                         Catalogue
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="{% url 'owned' %}" class="nav-link {% if request.resolver_match.url_name == 'owned' %}active{% endif %}">
+                <li>
+                    <a href="{% url 'owned' %}" class="{% if request.resolver_match.url_name == 'owned' %}active{% endif %}">
                         Purchased
                     </a>
                 </li>
@@ -39,12 +40,12 @@
 
         <!-- Cart -->
         {% if request.session.cart %}
-            <div class="header-cart">
-            <a href="{% url 'cart' %}" class="cart-link">Cart ({{ request.session.cart|length }})</a>
+            <div class="cart">
+            <a href="{% url 'cart' %}">Cart ({{ request.session.cart|length }})</a>
             </div>
         {% endif %}
 
-        <div class="header-auth">
+        <div class="auth">
             {% if user.is_authenticated %}
                 <form method="post" action={% url 'logout' %}>
                     {% csrf_token %}
@@ -60,16 +61,46 @@
 
     </header>
     <main>
-        {% if messages %}
-            <div class="error-messages">
-                {% for message in messages %}
-                    <div class="error">{{ message }}</div>
+        {% for message in messages %}
+            <div class={{ message.tags }}>{{ message }}</div>
+        {% endfor %}
+
+        <div class="has-right-sidebar">
+            <div class="main-content">
+                {% block content %}{% endblock %}
+            </div>
+            <div class="right-sidebar">
+                {% random_ads 1 as ads %}
+                {% for ad in ads %}
+                    <div class="ad">
+                        <img src="{{ ad.image.url }}">
+                    </div>
                 {% endfor %}
             </div>
-        {% endif %}
-
-        {% block content %}{% endblock %}
+        </div>
     </main>
- 
+    <script> 
+        document.documentElement.classList.add('scroll-restoring');
+
+        const stayForms = document.querySelectorAll('form[action*="/cart/"], form[class="sort-dropdown"]');
+        stayForms.forEach(form => {
+            function saveScroll() {
+                sessionStorage.setItem('scrollPosition', window.pageYOffset);
+            }
+            form.addEventListener('submit', saveScroll);
+            form.addEventListener('change', saveScroll);
+        });
+
+        // restore scroll position as early as possible
+        document.addEventListener('DOMContentLoaded', function() {
+            const scrollPosition = sessionStorage.getItem('scrollPosition');
+            if (scrollPosition) {
+                window.scrollTo(0, parseInt(scrollPosition));
+                sessionStorage.removeItem('scrollPosition');
+            }
+    
+            document.documentElement.classList.remove('scroll-restoring');
+        });
+    </script>
 </body>
 </html>

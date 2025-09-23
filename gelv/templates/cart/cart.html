@@ -7,21 +7,21 @@
     {% if cart_issues or cart_subscriptions %}
         <div class="cart-container">
             <!-- Cart Items -->
-            <div class="cart-items">
-                <div class="cart-header">
+            <div class="items">
+                <div class="header">
                     <h2>Subscriptions ({{ cart_subscriptions | length }})</h2>
                 </div>
 
                 {% for sub in cart_subscriptions %}
-                <div class="cart-item">
-                    <div class="item-details">
-                        <div class="item-name">
+                <div class="item">
+                    <div class="details">
+                        <div class="name">
                             {{ sub }}
                         </div>
                     </div>
 
                     {% if sub.product.discounted_price %}<div class="discount">{{ sub.product.formatted_discounted_price }}</div>{% endif %}
-                    <div class="product-price {% if sub.product.discounted_price %}crossed{% endif %}">{{ sub.product.formatted_price }}</div>
+                    <div class="price {% if sub.product.discounted_price %}crossed{% endif %}">{{ sub.product.formatted_price }}</div>
 
                     <form method="post" action="{% url 'change_subscription_start' %}" class="start-change-form">
                         {% csrf_token %}
@@ -45,14 +45,14 @@
                 </div>
                 {% endfor %}
 
-                <div class="cart-header">
+                <div class="header">
                     <h2>Journals ({{ cart_issues|length }})</h2>
                 </div>
 
                 {% for issue in cart_issues %}
-                <div class="cart-item">
-                    <div class="item-details">
-                        <div class="item-name">
+                <div class="item">
+                    <div class="details">
+                        <div class="name">
                             {{ issue }}
                         </div>
                     </div>
@@ -73,16 +73,16 @@
 
             <!-- Order Summary -->
             <div class="order-summary">
-                <div class="summary-header">
+                <div class="header">
                     <h3>Order Summary</h3>
                 </div>
                 
-                <div class="summary-content">
-                    <div class="summary-row">
+                <div class="content">
+                    <div class="row">
                         <span>Subtotal:</span>
                         <span>${{ total|floatformat:2 }}</span>
                     </div>
-                    <div class="summary-row summary-total">
+                    <div class="row total">
                         <span>Total:</span>
                         <span>${{ total|floatformat:2 }}</span>
                     </div>

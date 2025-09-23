@@ -1,8 +1,10 @@
 from django.contrib.auth.views import LogoutView
+from django.conf.urls.static import static
 from django.urls import include, path
 from gelv.views import catalogue, subscribe, cart, auth, checkout, owned, download, posts
 from gelv.admin import admin_site
 from gelv.cart import Cart
+from gelv.settings import DEBUG, MEDIA_ROOT, MEDIA_URL
 
 urlpatterns = [
     # Home page and news
@@ -37,3 +39,5 @@ urlpatterns = [
     # Admin/Management
     path('admin/', admin_site.urls),
 ]
+
+urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)

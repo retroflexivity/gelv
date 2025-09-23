@@ -1,0 +1,7 @@
+Dear {{ user.first_name|default:user.username }},
+
+Your payment {{ payment_number }} has been confirmed. Your items are now available on {{ site_name }}.
+
+Thanks,
+The {{ site_name }} Team
+

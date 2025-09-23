@@ -148,6 +148,23 @@ h1 {
   font-weight: 600;
 }
 
+.has-right-sidebar {
+  display: flex;
+}
+
+.main-content {
+  flex: 1;
+  padding-right: 50px;
+}
+
+.right-sidebar {
+  width: 300px;
+}
+
+.right-sidebar .ad {
+  width: 100%;
+}
+
 .search-section {
   display: flex;
   gap: 10px;

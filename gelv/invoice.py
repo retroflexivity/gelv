@@ -41,7 +41,6 @@ class Invoice:
 
         wb = xl.open('gelv/static/gelv/xlsx/invoice.xlsx')
         ws = wb['invoice']
-
         ws['B1'] = self.number
         ws['B2'] = format(date.today(), '%d.%m.%Y')
 
@@ -59,12 +58,14 @@ class Invoice:
         for order in list(self.payment.issueorder_set.all()) + list(self.payment.subscriptionorder_set.all()):
             ws.insert_rows(22)
             for src_ix, ref_ix, value in zip(
-                ('A1', 'B1', 'C1', 'D1'),
-                ('A22', 'C22', 'D22', 'E22'),
-                (order.product, amount := getattr(order, 'amount', 1), format(order.price, '.2f'), amount * order.price)
+                ('A1', 'B1', 'C1', 'D1', 'E1'),
+                ('A22', 'B22', 'C22', 'D22', 'E22'),
+                (order, '', amount := getattr(order, 'amount', 1), format(order.price, '.2f'), amount * order.price)
             ):
                 self._copy_cell(product_ws[src_ix], ws[ref_ix], value=str(value))
 
         if save:
             self.filepath = f'invoices/invoice_{self.number}.xlsx'
             wb.save(self.filepath)
+
+        wb.close()

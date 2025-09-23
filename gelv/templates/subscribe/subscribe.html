@@ -5,16 +5,16 @@
 {% block content %}
     <!-- Products List -->
     {% if journals %}
-        <div class="products-list">
+        <div class="subscriptions">
             {% for journal in journals %}
-                <div class="product-item expanded">
-                    <div class="product-header">
-                        <div class="product-info">
-                            <div class="product-name">{{ journal }}</div>
+                <div class="item expanded">
+                    <div class="header">
+                        <div class="info">
+                            <div class="name">{{ journal }}</div>
                         </div>
                         
                     </div>
-                   <div class="product-description">
+                   <div class="description">
                         {{ journal.description|linebreaks }}
                     </div>
                     <div class="subscription-options">

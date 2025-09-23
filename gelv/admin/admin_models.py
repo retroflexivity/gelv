@@ -2,14 +2,14 @@ from django.contrib import admin
 from django.urls import path
 from django.db.models import Max
 from django.http import HttpResponse
-from gelv.models import User, Journal, Issue, Subscription, IssueOrder, SubscriptionOrder, Payment
+from gelv.models import User, Journal, Issue, Subscription, IssueOrder, SubscriptionOrder, Payment, Ad
 from gelv.admin.admin_site import admin_site
 
 
 class IssueAdmin(admin.ModelAdmin):
-    list_display = ('journal', 'number_year', 'price', 'discounted_price', 'active')
-    list_filter = ('active', 'journal', 'price')
-    fields = ('journal', 'number', 'price', 'discounted_price', 'description', 'file', 'active')
+    list_display = ('journal', 'number_year', 'price', 'discounted_price', 'is_active')
+    list_filter = ('is_active', 'journal', 'price')
+    fields = ('journal', 'number', 'price', 'discounted_price', 'description', 'file', 'is_active')
 
     @admin.display(ordering='number', description='number')
     def number_year(self, obj):
@@ -40,9 +40,9 @@ class IssueAdmin(admin.ModelAdmin):
 
 
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ('journal', 'duration', 'price', 'discounted_price', 'active')
-    list_filter = ('active', 'journal', 'duration')
-    fields = ('journal', 'duration', 'price', 'discounted_price', 'active')
+    list_display = ('journal', 'duration', 'price', 'discounted_price', 'is_active')
+    list_filter = ('is_active', 'journal', 'duration')
+    fields = ('journal', 'duration', 'price', 'discounted_price', 'is_active')
 
 
 class JournalAdmin(admin.ModelAdmin):
@@ -51,6 +51,10 @@ class JournalAdmin(admin.ModelAdmin):
 
 class PostAdmin(admin.ModelAdmin):
     list_display = ('title', 'date')
+
+
+class AdAdmin(admin.ModelAdmin):
+    list_display = ('name', 'is_active')
 
 
 class SubscriptionOrderAdmin(admin.ModelAdmin):

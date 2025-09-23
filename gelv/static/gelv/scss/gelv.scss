@@ -247,6 +247,25 @@ h1 {
   }
 }
 
+
+.has-right-sidebar {
+  display: flex;
+}
+
+.main-content {
+  flex: 1;
+  padding-right: 50px;
+}
+
+.right-sidebar {
+  width: 300px;
+
+  .ad {
+    width: 100%;
+  }
+}
+
+
 // Search Section
 .search-section {
   display: flex;

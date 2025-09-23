@@ -62,7 +62,8 @@ def smart_redirect(request: HttpRequest, default: str = 'home') -> HttpResponse:
 
 def verbalize_price(price, language='lv') -> str:
     euros = num2words(round(price), lang=language)
+    cents = str(round(price % 1 * 100))
     if language == 'lv':
-        return f'{euros} eiro 00 centi'.capitalize()
+        return f'{euros} eiro {cents} centi'.capitalize()
     else:
         raise NotImplementedError

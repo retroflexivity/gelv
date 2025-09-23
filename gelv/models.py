@@ -3,9 +3,9 @@ from django.utils import timezone
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db.models.query import QuerySet
 from typing import TypeVar, cast, Optional
-from gelv.utils import trace, IssueNumber
 from django.shortcuts import get_object_or_404
 from django.db.models.manager import Manager
+from gelv.utils import trace, IssueNumber
 
 P = TypeVar('P', bound='AbstractProduct')
 
@@ -14,7 +14,7 @@ IssueNumberField = models.IntegerField  # starting from 01/2010
 
 class UserManager(BaseUserManager):
     """
-    Custom user manager for User model with email as unique identifier
+    Custom user manager for User model with email as unique identifier.
     """
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -40,7 +40,7 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
     """
     Custom user model that uses email as the unique identifier
-    instead of username
+    instead of username.
     """
     objects = UserManager()  # type: ignore[assignment, misc]
 
@@ -102,11 +102,9 @@ class AbstractProduct(models.Model):
     """
     objects: Manager['AbstractProduct']
 
-    id = models.AutoField(primary_key=True)
-
     price = models.FloatField(default=0.0)
     discounted_price = models.FloatField(null=True, blank=True)
-    active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
 
     @property
     def current_price(self):
@@ -123,7 +121,7 @@ class AbstractProduct(models.Model):
     @classmethod
     def get_objects(cls: type[P], ids: Optional[list[int]] = None, all=False) -> QuerySet['P']:
         id_filter = {'id__in': ids} if (ids is not None) else {}
-        active_filter = {} if all else {'active': True}
+        active_filter = {} if all else {'is_active': True}
         return cast('QuerySet[P]', cls.objects.filter(**id_filter).filter(**active_filter))
 
     @classmethod
@@ -166,7 +164,7 @@ class Subscription(AbstractProduct):
         return f'{self.journal.name} \u2014 {self.duration}'
 
     def get_issues(self, start: int) -> QuerySet[Issue]:
-        """Get existing issues included in the subscription from a specific date"""
+        """Get existing issues included in the subscription from a specific date."""
         numbers = range(start, start + self.duration)
         return Issue.get_objects(all=True).filter(journal=self.journal, number__in=numbers)
 
@@ -176,8 +174,6 @@ class Payment(models.Model):
     A single act of purchasing one or more orders,
     used for financial purposes.
     """
-    id = models.AutoField(primary_key=True)
-
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField(default=timezone.now)
 
@@ -218,7 +214,7 @@ class Payment(models.Model):
 
     @classmethod
     def get_latest(cls, user) -> 'Payment':
-        """Get latest payment made by a user, if authenticated (for billing details)"""
+        """Get latest payment made by a user, if authenticated (for billing details)."""
         try:
             latest = cls.objects.filter(user=user.id).latest('date')
             if not latest.billing_email:
@@ -231,9 +227,9 @@ class Payment(models.Model):
 class AbstractOrder(models.Model):
     """
     An atomic purchase of a single product.
+    Used for ownership proofing and in invoices.
     """
     objects: models.Manager['AbstractOrder']
-    id = models.AutoField(primary_key=True)
 
     product = models.ForeignKey(AbstractProduct, on_delete=models.CASCADE)
     price = models.FloatField()
@@ -243,8 +239,8 @@ class AbstractOrder(models.Model):
     def invoice_entry(self) -> str:
         return str(self.product)
 
-    def __str__(self):
-        return f'{self.payment.user}: {self.product}'
+    def __str__(self) -> str:
+        return f'{self.product}'
 
     @classmethod
     def get_by_user_sorted(cls, user_id: int) -> QuerySet['AbstractOrder']:
@@ -256,8 +252,9 @@ class AbstractOrder(models.Model):
 
 class IssueOrder(AbstractOrder):
     """
-    Purchase of a single issue. A user owns any issue
-    he has an order with status == True for.
+    Purchase of a single issue.
+    Used for ownership proofing and in invoices.
+    A user owns any issue iff he has an order with status == True for.
     """
     objects: models.Manager['IssueOrder']
     product = models.ForeignKey(Issue, on_delete=models.CASCADE)
@@ -265,23 +262,25 @@ class IssueOrder(AbstractOrder):
 
 class SubscriptionOrder(AbstractOrder):
     """
-    Purchace of a subscription. A user owns any issue
-    that is in range of any of his subscriptions.
+    Purchace of a subscription.
+    Used for ownership proofing and in invoices.
+    A user owns issues that are in range of any of his subscriptions.
     """
     objects: models.Manager['SubscriptionOrder']
     product = models.ForeignKey(Subscription, on_delete=models.CASCADE)
     start = IssueNumberField()
 
-    def invoice_entry(self):
-        return f'{self.product} mēnesi (no {self.start} līdz {self.end})'
-
     @property
     def end(self):
+        """Last issue of the subscription."""
         return self.start + self.product.duration
 
     def get_issues(self) -> QuerySet[Issue]:
         """Get existing issues included in the subscription order."""
         return self.product.get_issues(self.start)
+
+    def __str__(self) -> str:
+        return f'{self.product} (no {IssueNumber(self.start)} līdz {IssueNumber(self.end)})'
 
 
 class Post(models.Model):
@@ -297,6 +296,19 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Ad(models.Model):
+    """
+    An image to show in the advertisement block.
+    """
+    name = models.TextField()
+    image = models.ImageField(upload_to='ads')
+    is_active = models.BooleanField(default=True)
+
+    @classmethod
+    def get_active(cls: type['Ad']) -> QuerySet['Ad']:
+        return cls.objects.filter(is_active=True)
 
 
 product_types: dict[str, type[Issue | Subscription]] = {'issue': Issue, 'subscription': Subscription}

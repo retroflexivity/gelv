@@ -57,18 +57,17 @@ def catalogue_view(request: HttpRequest) -> HttpResponse:
         page_products = paginator.page(paginator.num_pages)
 
     # Get user's owned products if logged in
-    owned_product_ids: QuerySet[Issue, int] = QuerySet()
     if request.user.is_authenticated:
         try:
             user = User.get_by_email(request.user.email)
             if user:
-                owned_product_ids = user.get_owned_issues().values_list('id', flat=True)
+                owned_product_ids = trace(user.get_owned_issues()).values_list('id', flat=True)
         except ObjectDoesNotExist as e:
             trace(e)
 
     # Get issues in cart
     cart_items = [issue.product.id for issue in Cart.from_session(request.session).issues]
-    trace(f"{cart_items=}")
+    trace(cart_items, 'cart items')
 
     context = {
         'products': page_products,
