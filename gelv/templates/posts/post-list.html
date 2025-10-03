@@ -2,12 +2,12 @@
 {% load static %}
 
 {% block title %}Home{% endblock %}
+{% block heading %}News{% endblock %}
 
 {% block content %}
-	<h2>News</h2>
 	<div class="post-list">
 		{% for post in object_list %}
-			<div class="post">
+			<div class="item">
 				<div class="header">
 					<a href="{% url 'post' post.id %}"><h3>{{ post.title }}</h3></a>
 					<div class="date">{{ post.date }}</div>

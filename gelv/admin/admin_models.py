@@ -39,6 +39,15 @@ class IssueAdmin(admin.ModelAdmin):
         js = ('gelv/admin/js/issue_admin.js',)
 
 
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'user', 'total_price', 'paid', 'products', 'comment', 'invoice')
+    search_fields = ('user', 'products', 'comment')
+
+    @admin.display()
+    def products(self, obj):
+        return ", ".join(map(str, obj.products))
+
+
 class SubscriptionAdmin(admin.ModelAdmin):
     list_display = ('journal', 'duration', 'price', 'discounted_price', 'is_active')
     list_filter = ('is_active', 'journal', 'duration')

@@ -2,15 +2,14 @@
 {% load filters %}
 
 {% block title %}Cart{% endblock %}
+{% block heading %}Cart{% endblock %}
 
 {% block content %}
     {% if cart_issues or cart_subscriptions %}
         <div class="cart-container">
             <!-- Cart Items -->
             <div class="items">
-                <div class="header">
-                    <h2>Subscriptions ({{ cart_subscriptions | length }})</h2>
-                </div>
+                <h2>Subscriptions ({{ cart_subscriptions | length }})</h2>
 
                 {% for sub in cart_subscriptions %}
                 <div class="item">
@@ -45,9 +44,7 @@
                 </div>
                 {% endfor %}
 
-                <div class="header">
-                    <h2>Journals ({{ cart_issues|length }})</h2>
-                </div>
+                <h2>Journals ({{ cart_issues|length }})</h2>
 
                 {% for issue in cart_issues %}
                 <div class="item">
@@ -73,15 +70,9 @@
 
             <!-- Order Summary -->
             <div class="order-summary">
-                <div class="header">
-                    <h3>Order Summary</h3>
-                </div>
+                <h3>Order Summary</h3>
                 
                 <div class="content">
-                    <div class="row">
-                        <span>Subtotal:</span>
-                        <span>${{ total|floatformat:2 }}</span>
-                    </div>
                     <div class="row total">
                         <span>Total:</span>
                         <span>${{ total|floatformat:2 }}</span>
@@ -120,6 +111,9 @@
         <div class="empty-cart">
             <p>Your cart is empty.</p>
         </div>
-        <a href="{% url 'catalogue' %}" class="continue-shopping">Browse Products</button>
+        <a href="{% url 'catalogue' %}" class="continue-shopping">Browse Products</a>
     {% endif %}
+
+    {% comment %} hide right sidebar here {% endcomment %}
+    {% block right_sidebar %}{% endblock %}
 {% endblock %}

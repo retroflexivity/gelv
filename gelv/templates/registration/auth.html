@@ -7,9 +7,7 @@
 
         <!-- login column -->
         <div class="column login-column">
-            <div class="header">
-                <h2>Sign in to your account</h2>
-            </div>
+            <h2>Sign in to your account</h2>
 
             <!-- login form -->
             <form method="post" action={% url 'auth' %}>
@@ -42,9 +40,7 @@
         </div>
         <!-- signup column -->
         <div class="column signup-column">
-            <div class="header">
-                <h2>Create account</h2>
-            </div>
+            <h2>Create account</h2>
 
             <!-- django form errors for signup -->
             {% if signup_form.errors %}

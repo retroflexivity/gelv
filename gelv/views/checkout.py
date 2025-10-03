@@ -7,15 +7,14 @@ from django.shortcuts import redirect
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.http import require_POST
 from django.db import transaction
-from gelv.invoice import Invoice
 from gelv.variables import site_url
 from gelv.utils import get_request_content, trace
+from gelv.invoice import Invoice
 from gelv.views.cart import Cart, PAYMENT_METHODS, BILLING_DETAILS_FIELDS
 from gelv.models import Issue, Subscription, IssueOrder, SubscriptionOrder, User, Payment
 
 
-def send_invoice_mail(user: User, invoice: Invoice) -> bool:
-
+def send_invoice_mail(user: User, invoice: Invoice, invoice_file: str) -> bool:
     site_name = getattr(settings, 'SITE_NAME', None)
     context = {
         'user': user,
@@ -31,7 +30,7 @@ def send_invoice_mail(user: User, invoice: Invoice) -> bool:
             body=render_to_string('emails/invoice_email.txt', context),
             from_email=settings.DEFAULT_FROM_EMAIL,
         )
-        msg.attach_file(invoice.filepath)
+        msg.attach_file(invoice_file)
         msg.send()
 
         trace(user.email, f'invoice email for {invoice.number} (payment {invoice.payment.id}) sent to:')
@@ -80,16 +79,6 @@ def process_payment(request: HttpRequest) -> HttpResponse:
         messages.error(request, 'Email is required')
         return redirect(request.META.get('HTTP_REFERER', 'cart'))
 
-    trace(type(cart.issues))
-    # check if user already owns any of the issues
-    owned = user.get_owned_issues().filter(
-        pk__in=[issue.product.id for issue in cart.issues],
-    )
-
-    if owned.exists():
-        messages.error(request, f'You already own {", ".join(map(str, owned))}.')
-        return redirect(request.META.get('HTTP_REFERER', 'cart'))
-
     # create a single Payment and Orders for each product
     payment = Payment.objects.create(user=user, **billing_details)
 
@@ -102,13 +91,12 @@ def process_payment(request: HttpRequest) -> HttpResponse:
             IssueOrder.objects.create(product=issue.product, payment=payment, price=issue.product.current_price, **issue.metadata)
 
     # generate and send invoice
-    invoice = Invoice(payment)
-    invoice.generate()
-    success = send_invoice_mail(user, invoice)
+    invoice = payment.generate_invoice()
+    success = send_invoice_mail(user, invoice, payment.invoice.path)
     if success:
         messages.success(request, 'Order completed! Please check your inbox for an invoice.')
     else:
-        messages.error(request, 'Order completed! But we couldn\'t send you an invoice. You can find it in the Account tab under "payments".')
+        messages.error(request, 'Order completed! But we couldn\'t send you an invoice. Please contact us.')
 
     # save billing details to the user
     for attr, value in billing_details.items():

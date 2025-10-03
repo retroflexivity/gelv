@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Purchased products{% endblock %}
+{% block heading %}Purchased products{% endblock %}
 
 {% block content %}
     {% include "blocks/search.html" %}
@@ -11,7 +12,7 @@
     {% if products %}
         <div class="products">
             {% for product in products %}
-                <div class="item">
+                <div class="item has-description">
                     <div class="header" onclick="toggleDescription(this)">
                         <div class="info">
                             <div class="name">{{ product }}</div>
@@ -62,6 +63,5 @@
             <p>Try adjusting your search criteria or browse all journals.</p>
         </div>
     {% endif %}
-    <script src="{% static 'gelv/js/toggle-description.js' %}"></script>
 {% endblock %}
 

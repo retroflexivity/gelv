@@ -1,9 +1,9 @@
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse, HttpRequest, HttpResponse
 import json
-from typing import TypedDict, Any, Callable, Optional, TypeGuard, get_type_hints
+from typing import TypedDict, Any, Callable, Optional, TypeGuard, get_type_hints, cast
 from gelv.utils import get_request_content, trace, IssueN
-from gelv.models import AbstractProduct, Issue, Subscription, product_types
+from gelv.models import AbstractProduct, Issue, Subscription, product_types, AnyProduct
 from gelv.forms import CartSingletonForm
 
 
@@ -12,7 +12,7 @@ class FieldConfig(TypedDict):
     default: Optional[Callable]
 
 
-SchemaType = dict[type[AbstractProduct], dict[str, FieldConfig]]
+SchemaType = dict[type[AnyProduct], dict[str, FieldConfig]]
 
 
 class CartMetadataRegistry:
@@ -25,7 +25,7 @@ class CartMetadataRegistry:
             }
         }
 
-        self.product_classes: dict[str, type[AbstractProduct]] = {
+        self.product_classes: dict[str, type[AnyProduct]] = {
             'issue': Issue,
             'subscription': Subscription,
         }
@@ -67,14 +67,14 @@ class CartItem:
     def is_raw_dict(cls, data: Any) -> TypeGuard['Raw']:
         raw_T = get_type_hints(cls.Raw)
         return\
-            ('type' in data.keys()) and isinstance(data['type'], raw_T['type']) and trace((data['type'] in product_types), 'types') and\
+            ('type' in data.keys()) and isinstance(data['type'], raw_T['type']) and (data['type'] in product_types) and\
             trace(('id' in data.keys()) and isinstance(data['type'], raw_T['id'])) and\
             trace(isinstance(data.get(['metadata'], {}), raw_T['metadata']))
 
-    product: AbstractProduct
+    product: AnyProduct
     metadata: dict[str, Any]
 
-    def __init__(self, product: AbstractProduct, **kwargs):
+    def __init__(self, product: AnyProduct, **kwargs):
         self.product = product
         self.metadata = cart_metadata_registry.create(product, **kwargs)
 
@@ -118,7 +118,7 @@ class Cart:
         for item_data in data:
             klass = cart_metadata_registry.product_classes[item_data['type']]
             product = get_object_or_404(klass, id=item_data['id'])
-            self.items.append(CartItem(product, **item_data['metadata']))
+            self.items.append(CartItem(cast(AnyProduct, product), **item_data['metadata']))
 
     @property
     def total_price(self) -> float:

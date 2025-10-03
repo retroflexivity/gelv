@@ -2,6 +2,7 @@ import openpyxl as xl
 from copy import copy
 from datetime import date
 from typing import Optional
+from io import BytesIO
 from gelv.models import Payment, AbstractOrder
 from gelv.utils import verbalize_price, trace
 
@@ -11,14 +12,17 @@ class Invoice:
     An XLSX invoice class.
     """
     payment: Payment
-    filepath: str
 
     def __init__(self, payment) -> None:
         self.payment = payment
 
     @property
     def number(self) -> str:
-        return f'GK{1000000 + self.payment.id}'  # TODO: find out if we need to continue numbering
+        return self.payment.number
+
+    @property
+    def filename(self) -> str:
+        return f'{self.number}.xlsx'
 
     @staticmethod
     def _copy_cell(src: xl.cell.Cell, dest: xl.cell.Cell, value: Optional[str] = None) -> None:
@@ -36,7 +40,7 @@ class Invoice:
             dest.protection = copy(src.protection)  # type: ignore
             dest.alignment = copy(src.alignment)  # type: ignore
 
-    def generate(self, save=True) -> None:
+    def generate(self) -> BytesIO:
         product_ws = xl.open('gelv/static/gelv/xlsx/product_row.xlsx')['product']
 
         wb = xl.open('gelv/static/gelv/xlsx/invoice.xlsx')
@@ -64,8 +68,6 @@ class Invoice:
             ):
                 self._copy_cell(product_ws[src_ix], ws[ref_ix], value=str(value))
 
-        if save:
-            self.filepath = f'invoices/invoice_{self.number}.xlsx'
-            wb.save(self.filepath)
-
-        wb.close()
+        wb.save(buffer := BytesIO())
+        buffer.seek(0)
+        return buffer

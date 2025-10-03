@@ -1,13 +1,15 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.files.base import ContentFile
 from django.db.models.query import QuerySet
-from typing import TypeVar, cast, Optional
+from typing import TypeVar, cast, Optional, get_args, Generator
 from django.shortcuts import get_object_or_404
 from django.db.models.manager import Manager
 from gelv.utils import trace, IssueNumber
 
 P = TypeVar('P', bound='AbstractProduct')
+
 
 IssueNumberField = models.IntegerField  # starting from 01/2010
 
@@ -180,6 +182,8 @@ class Payment(models.Model):
     paid = models.BooleanField(default=False)
     invoice = models.FileField(upload_to='invoices', null=True)
 
+    comment = models.TextField(null=True)
+
     # billing details
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
@@ -189,19 +193,12 @@ class Payment(models.Model):
     postal_code = models.CharField(max_length=10)
     billing_email = models.EmailField()
 
-    def _generate_invoice(self):
+    def generate_invoice(self):
         from gelv.invoice import Invoice
-
         invoice = Invoice(self)
-        invoice.generate()
-        self.invoice = invoice.filepath
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        if not self.invoice:
-            self._generate_invoice()
-            self.save(update_fields=['invoice'])
+        invoice_io = invoice.generate()
+        self.invoice.save(invoice.filename, ContentFile(invoice_io.getvalue()), save=True)
+        return invoice
 
     @property
     def total_price(self):
@@ -209,8 +206,19 @@ class Payment(models.Model):
         sub_total = SubscriptionOrder.objects.filter(payment=self).aggregate(models.Sum('price', default=0))['price__sum']
         return issue_total + sub_total
 
+    @property
+    def number(self) -> str:
+        return f'GK{1000000 + self.id}'
+
     def __str__(self):
-        return f'{self.user} @ {self.date}'
+        return self.number
+
+    @property
+    def products(self) -> set['AnyProduct']:
+        def type_products(order_c: type[AnyOrder]) -> Generator[AnyProduct]:
+            return (o.product for o in order_c.objects.filter(payment=self))
+
+        return set().union(*(type_products(order_c) for order_c in get_args(AnyOrder)))
 
     @classmethod
     def get_latest(cls, user) -> 'Payment':
@@ -311,4 +319,6 @@ class Ad(models.Model):
         return cls.objects.filter(is_active=True)
 
 
+AnyProduct = Subscription | Issue
+AnyOrder = SubscriptionOrder | IssueOrder
 product_types: dict[str, type[Issue | Subscription]] = {'issue': Issue, 'subscription': Subscription}

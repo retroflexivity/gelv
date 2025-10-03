@@ -8,7 +8,7 @@ from gelv.models import Post
 class PostListView(ListView):
     model = Post
     paginate_by = 20
-    template_name = 'posts/post_list.html'
+    template_name = 'posts/post-list.html'
 
 
 class PostDetailView(DetailView):

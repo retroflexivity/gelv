@@ -57,6 +57,7 @@ def catalogue_view(request: HttpRequest) -> HttpResponse:
         page_products = paginator.page(paginator.num_pages)
 
     # Get user's owned products if logged in
+    owned_product_ids = []
     if request.user.is_authenticated:
         try:
             user = User.get_by_email(request.user.email)

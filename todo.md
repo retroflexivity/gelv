@@ -1,8 +1,8 @@
 # todo
 - user settings
-- notify user when payment confirmed
+- notify admin when payment made
 - admin field search
-
+- list products in payment admin
 
 # Проект сайта.
  

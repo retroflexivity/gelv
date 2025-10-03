@@ -11,9 +11,9 @@
 <body>
     <header class="main-header">
         <!-- Logo -->
-        <div class="logo">
-            <a href="{% url 'home' %}" class="brand-link">
-                <h2>B&E</h2>
+        <div class="logo {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+            <a href="{% url 'home' %}">
+                B&E
             </a>
         </div>
 
@@ -30,53 +30,73 @@
                         Catalogue
                     </a>
                 </li>
+                {% comment %}
                 <li>
                     <a href="{% url 'owned' %}" class="{% if request.resolver_match.url_name == 'owned' %}active{% endif %}">
                         Purchased
                     </a>
                 </li>
+                {% endcomment %}
             </ul>
         </nav>
 
-        <!-- Cart -->
-        {% if request.session.cart %}
-            <div class="cart">
-            <a href="{% url 'cart' %}">Cart ({{ request.session.cart|length }})</a>
-            </div>
-        {% endif %}
-
-        <div class="auth">
-            {% if user.is_authenticated %}
-                <form method="post" action={% url 'logout' %}>
-                    {% csrf_token %}
-                    <button type=submit>log out</button>
-                </form>
-            {% else %}
-                <form method="post" action={% url 'login' %}>
-                    {% csrf_token %}
-                    <button type=submit>log in</button>
-                </form>
+        <div class="right-section">
+            <!-- Cart -->
+            {% if request.session.cart %}
+                <div class="cart">
+                    <a href="{% url 'cart' %}">Cart ({{ request.session.cart|length }})</a>
+                </div>
             {% endif %}
-        </div>
 
+            <div class="auth">
+                {% if user.is_authenticated %}
+                    <div class="dropdown">
+                        <div class="trigger">
+                            {{ user.email }}
+                            <span class="dropdown-arrow">▼</span>
+                        </div>
+                        <div class="menu">
+                            <a href="{% url 'owned' %}" class="item">
+                                Purchased
+                            </a>
+                            <form method="post" action="{% url 'logout' %}" class="item-form">
+                                {% csrf_token %}
+                                <button type="submit" class="item">Log out</button>
+                            </form>
+                        </div>
+                    </div>
+                {% else %}
+                    <form method="post" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        <button type="submit">log in</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
     </header>
     <main>
         {% for message in messages %}
-            <div class={{ message.tags }}>{{ message }}</div>
+            <div class="messages">
+                <div class={{ message.tags }}>{{ message }}</div>
+            </div>
         {% endfor %}
 
         <div class="has-right-sidebar">
             <div class="main-content">
+            	<h1>{% block heading %}{% endblock %}</h1>
+                
                 {% block content %}{% endblock %}
             </div>
-            <div class="right-sidebar">
-                {% random_ads 1 as ads %}
-                {% for ad in ads %}
-                    <div class="ad">
-                        <img src="{{ ad.image.url }}">
-                    </div>
-                {% endfor %}
-            </div>
+            {% block right_sidebar %}
+                <div class="right-sidebar">
+                    {% random_ads 1 as ads %}
+                    {% for ad in ads %}
+                        <div class="ad">
+                            <img src="{{ ad.image.url }}">
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endblock %}
         </div>
     </main>
     <script> 
@@ -102,5 +122,6 @@
             document.documentElement.classList.remove('scroll-restoring');
         });
     </script>
+    <script src="{% static 'gelv/js/toggle-description.js' %}"></script>
 </body>
 </html>
